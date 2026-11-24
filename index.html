@@ -13,7 +13,21 @@
     padding-left: max(18px, env(safe-area-inset-left));
     padding-right: max(18px, env(safe-area-inset-right)); }
   h1 { font-size: 22px; margin: 0 0 6px; line-height: 1.32; letter-spacing: -.02em; }
-  p.sub { color: #5b6476; font-size: 14px; margin: 0 0 20px; line-height: 1.6; }
+  /* --- 헤더 KPI 스트립 (온톨로지 v3 마스터 우측 상단 요약 바) --- */
+  .kpi { background: #fff; border: 1px solid #e2e7f0; border-radius: 14px; padding: 13px 15px 11px; margin: 12px 0 0;
+    box-shadow: 0 2px 8px rgba(16,24,40,0.04); }
+  .kpirow { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 2px 6px; align-items: start; }
+  .k { display: flex; flex-direction: column; align-items: flex-end; text-align: right; min-width: 0; }
+  .k b { display: block; font-size: clamp(15px, 4.3vw, 21px); font-weight: 800; letter-spacing: -.03em; line-height: 1.12;
+    color: #161b26; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .k span { display: block; font-size: clamp(8.5px, 2.35vw, 10.5px); line-height: 1.32; color: #8b93a1; margin-top: 3px;
+    text-align: right; word-break: keep-all; }
+  .kpidet { margin-top: 9px; padding-top: 8px; border-top: 1px solid #eef1f6; color: #8b93a1;
+    font-size: clamp(9.6px, 2.7vw, 10.5px); line-height: 1.55; text-align: right; word-break: keep-all; }
+  .kpidet .d1, .kpidet .d2 { display: inline; }
+  @media (max-width: 480px) { .kpidet .d2 { display: block; } }
+  .lead { margin: -4px 0 12px; }
+  .lead .ln { display: block; }
   h2 { font-size: 15px; margin: 26px 0 10px; color: #3b4354; letter-spacing: -0.01em; }
   .card { display: block; background: #fff; border: 1px solid #e2e7f0; border-radius: 14px; padding: 18px; margin-bottom: 12px; text-decoration: none; color: inherit; box-shadow: 0 2px 8px rgba(16,24,40,0.04); }
   .card:hover { border-color: #2563eb; }
@@ -28,11 +42,17 @@
   .tool:hover { background: #eaf2ff; border-color: #bcd4fb; }
   .tool span { font-weight: 500; color: #5b7fa8; }
   .foot { font-size: 12px; color: #8b93a1; margin-top: 26px; line-height: 1.7; }
+  /* 기준일 한 줄 고정 — 390px에서도 줄바꿈 없이 폭 안에 들어오도록 폰트만 스케일 */
+  .foot .foot-line { display: block; white-space: nowrap; font-size: clamp(8.5px, 2.62vw, 12px);
+    letter-spacing: -.015em; font-variant-numeric: tabular-nums; }
   @media (max-width: 430px) {
     .wrap { padding: 18px 14px 44px;
       padding-left: max(14px, env(safe-area-inset-left));
       padding-right: max(14px, env(safe-area-inset-right)); }
     h1 { font-size: 19px; }
+    .kpi { padding: 11px 12px 10px; border-radius: 13px; margin-top: 10px; }
+    .kpirow { gap: 2px 4px; }
+    .k b { letter-spacing: -.035em; }
     .card { padding: 15px; border-radius: 13px; }
     .title { font-size: 16px; }
     .desc { font-size: 12.5px; }
@@ -43,10 +63,23 @@
 <body>
 <div class="wrap">
   <h1>수도권 83지역 부동산 데이터 대시보드</h1>
-  <p class="sub">PC·아이폰 Safari 어디서든 바로 열어보는 인터랙티브 분석 앱 — <b>지표 70선</b> 7개 카테고리 + 지도 뷰</p>
+
+  <div class="kpi">
+    <div class="kpirow">
+      <div class="k"><b>340만</b><span>건 레코드</span></div>
+      <div class="k"><b>34,653</b><span>개 평형 클러스터</span></div>
+      <div class="k"><b>23,575</b><span>개 단지</span></div>
+      <div class="k"><b>947</b><span>개 법정동</span></div>
+      <div class="k"><b>83</b><span>개 지역</span></div>
+    </div>
+    <div class="kpidet"><span class="d1">매물 호가 29.7만 · 실거래 24~26 매매 70.9만·전세 105.4만</span><span class="d2"> · 16~23 매매 80.9만·전세 53.2만</span></div>
+  </div>
 
   <h2>📈 지표 70선 — 7개 카테고리 대시보드</h2>
-  <p class="desc" style="margin:-4px 0 12px">법정동·세대수·평형·유형·연식·가격 6중 필터 + 🗺️ 지도 히트맵 · 모든 수치 실시간 재계산</p>
+  <p class="desc lead">
+    <span class="ln">법정동·세대수·평형·유형·연식·가격 6중 필터</span>
+    <span class="ln">지도 히트맵 · 모든 수치 실시간 재계산</span>
+  </p>
 
   <a class="card" href="./indicators-01-macro-cycle.html">
     <span class="badge new">#1~#14</span>
@@ -96,7 +129,7 @@
   </a>
 
   <div class="foot">
-    기준일 2026-11-24 · 서울 25구 + 경기 47개 시·군·구 + 인천 11개 구·군 (83개 지역)<br>
+    <span class="foot-line">기준일 2026-11-24 · 서울 25구 + 경기 47개 시·군·구 + 인천 11개 구·군 (83개 지역)</span>
     각 앱은 데이터 내장 단일 HTML — 설치·서버·인터넷 없이 동작하며, 6중 필터·지도 히트맵·차트 PNG·표 CSV 저장을 지원합니다.
   </div>
 </div>
