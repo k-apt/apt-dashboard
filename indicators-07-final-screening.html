@@ -178,6 +178,36 @@ input[type=range]{width:150px;accent-color:#2f6fd0}
 .chartbox svg{width:100%;height:auto;display:block}
 .scrollhint{display:none}
 .chart-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:8px}
+/* ── PNG 저장(iOS 사진첩) — 안내 문구 · 미리보기 모달 ───────────────── */
+.pngnote{font-size:11.5px;color:var(--sub);line-height:1.6;margin-top:6px;text-align:right;min-height:1px}
+.pngnote b{color:var(--ink);font-weight:700}
+.pngmodal{position:fixed;inset:0;z-index:95;display:none}
+.pngmodal.on{display:block}
+.pngmodal-bd{position:absolute;inset:0;background:rgba(10,16,28,.62)}
+.pngmodal-in{position:absolute;inset:0;margin:auto;width:min(94vw,780px);height:fit-content;max-height:92vh;
+  display:flex;flex-direction:column;background:var(--panel);color:var(--ink);border:1px solid var(--line);
+  border-radius:14px;box-shadow:0 24px 60px rgba(9,14,24,.42);overflow:hidden}
+.pngmodal-hd{display:flex;align-items:center;gap:10px;padding:11px 13px;border-bottom:1px solid var(--softline)}
+.pngmodal-hd b{flex:1;min-width:0;font-size:12.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pngmodal-hd button{border:none;background:transparent;color:var(--sub);font-size:15px;line-height:1;padding:5px 7px}
+.pngmodal-hd button:hover{background:transparent;color:var(--ink)}
+.pngmodal-body{flex:1;min-height:0;overflow:auto;-webkit-overflow-scrolling:touch;background:var(--soft);padding:10px;
+  display:flex;align-items:center;justify-content:center}
+.pngmodal-body img{max-width:100%;max-height:100%;width:auto;height:auto;margin:auto;border-radius:6px;
+  -webkit-touch-callout:default;touch-action:manipulation}
+.pngmodal-ft{display:flex;align-items:center;gap:10px;padding:10px 13px;border-top:1px solid var(--softline);flex-wrap:wrap}
+.pngmodal-hint{flex:1;min-width:170px;font-size:11.5px;color:var(--sub);line-height:1.55}
+.pngmodal-hint b{color:var(--ink)}
+body.modalopen{overflow:hidden}
+@media(max-width:560px){
+  .pngnote{text-align:left}
+  .pngmodal-in{width:100vw;height:100%;max-height:none;border-radius:0;border:none}
+  .pngmodal-body{padding:8px}
+  .pngmodal-hd{padding-top:max(11px,env(safe-area-inset-top))}
+  .pngmodal-ft{padding-bottom:max(10px,env(safe-area-inset-bottom))}
+  .pngmodal-ft{gap:8px}
+  .pngmodal-ft button{flex:1}
+}
 .legend{display:flex;gap:14px;font-size:11.5px;color:var(--sub);margin-top:6px;flex-wrap:wrap}
 .legend i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px}
 
@@ -436,8 +466,10 @@ html[data-theme="dark"] .picker{box-shadow:none}
     <div class="note" id="mapinfo" style="margin-top:2px"></div>
     <div class="chart-actions">
       <button id="pngBtn" class="primary">차트 PNG 저장</button>
+      <button id="pngPrevBtn">🖼 미리보기</button>
       <button id="csvBtn">표 CSV 저장</button>
     </div>
+    <div class="pngnote" id="pngNote"></div>
     <div class="legend" id="chartLegend"></div>
   </div>
 
@@ -696,6 +728,7 @@ function init(){
   const ac=$("#areaChip");
   if(ac) ac.onclick=()=>{ STATE.area=null; render(); };
   $("#pngBtn").onclick=savePNG;
+  const pb=$("#pngPrevBtn"); if(pb) pb.onclick=previewPNG;
   $("#csvBtn").onclick=saveCSV;
   render();
   window.APP={state:STATE, render, renderTable, renderDongs,
@@ -703,7 +736,8 @@ function init(){
     setInd:(n)=>{STATE.ind=n;render();},
     setDongs:(arr)=>{STATE.dongs=new Set(arr);renderDongs();render();},
     setTiers:(arr)=>{STATE.tiers=new Set(arr);render();},
-    setPrice:(a,b)=>{STATE.pmin=+a;STATE.pmax=+b;syncPrice();render();}};
+    setPrice:(a,b)=>{STATE.pmin=+a;STATE.pmax=+b;syncPrice();render();},
+    closePngModal, previewPNG};
 }
 function setTheme(t){
   document.documentElement.setAttribute("data-theme",t);
@@ -1860,8 +1894,82 @@ function saveCSV(){
   download(`ind${String(ind.no).padStart(2,"0")}_${tag}.csv`,
     new Blob(["\ufeff"+[head,...lines].join("\n")],{type:"text/csv;charset=utf-8"}));
 }
-function savePNG(){
-  const svg=$("#chart").querySelector("svg"); if(!svg) return;
+/* PNG 저장 — iOS Safari는 <a download>가 '사진'앱이 아니라 '파일'앱에 저장되므로
+   Web Share Level 2(files) 공유 시트의 「이미지 저장」을 먼저 쓰고,
+   미지원·실패·인앱 브라우저에서는 미리보기 모달(길게 눌러 저장)로 폴백한다. */
+const IS_IOS = /iP(hone|ad|od)/.test(navigator.userAgent||"") ||
+  (navigator.platform==="MacIntel" && (navigator.maxTouchPoints||0)>1);
+function pngFile(blob,name){ try{ return new File([blob],name,{type:"image/png"}); }catch(e){ return null; } }
+function canSharePng(file){
+  try{ return !!(file && navigator.canShare && navigator.share && navigator.canShare({files:[file]})); }
+  catch(e){ return false; }
+}
+function pngNote(html){
+  const n=$("#pngNote"); if(!n) return;
+  n.innerHTML=html; clearTimeout(n._t);
+  n._t=setTimeout(()=>{ n.innerHTML=""; },10000);
+}
+function showPngModal(blob,name){
+  let m=$("#pngModal");
+  if(!m){
+    m=document.createElement("div"); m.id="pngModal"; m.className="pngmodal";
+    m.innerHTML=`<div class="pngmodal-bd" data-pngclose="1"></div>
+      <div class="pngmodal-in" role="dialog" aria-modal="true" aria-label="차트 PNG 미리보기">
+        <div class="pngmodal-hd"><b id="pngName"></b><button id="pngX" aria-label="닫기">✕</button></div>
+        <div class="pngmodal-body"><img id="pngImg" alt="저장할 차트 이미지"></div>
+        <div class="pngmodal-ft">
+          <span class="pngmodal-hint">이미지를 <b>길게 눌러</b> 「사진에 저장」(안드로이드 「이미지 다운로드」)을 누르면 사진첩에 저장됩니다.</span>
+          <button id="pngDl">파일로 다운로드</button>
+          <button id="pngClose" class="primary">닫기</button>
+        </div>
+      </div>`;
+    document.body.appendChild(m);
+    m.addEventListener("click",e=>{
+      const t=e.target;
+      if(t.dataset && t.dataset.pngclose==="1"){ closePngModal(); return; }
+      if(t.id==="pngX" || t.id==="pngClose"){ closePngModal(); return; }
+      if(t.id==="pngDl" && m._blob){ download(m._name,m._blob); }
+    });
+    document.addEventListener("keydown",e=>{
+      if(e.key==="Escape" && m.classList.contains("on")) closePngModal();
+    });
+  }
+  if(m._url) URL.revokeObjectURL(m._url);
+  m._blob=blob; m._name=name; m._url=URL.createObjectURL(blob);
+  $("#pngName").textContent=name;
+  $("#pngImg").src=m._url;
+  m.classList.add("on"); document.body.classList.add("modalopen");
+  return m;
+}
+function closePngModal(){
+  const m=$("#pngModal"); if(!m) return;
+  m.classList.remove("on"); document.body.classList.remove("modalopen");
+  if(m._url){ const u=m._url; m._url=null;
+    setTimeout(()=>{ URL.revokeObjectURL(u); const i=$("#pngImg"); if(i) i.removeAttribute("src"); },250); }
+}
+async function deliverPng(blob,name){
+  const file=pngFile(blob,name);
+  if(canSharePng(file)){
+    try{
+      await navigator.share({files:[file],title:name});
+      pngNote(`공유 시트에서 <b>이미지 저장</b>을 고르면 사진첩에 저장됩니다.`);
+      return;
+    }catch(err){
+      if(err && err.name==="AbortError") return;        // 공유 시트를 닫음 — 조용히 무시
+      showPngModal(blob,name); return;                    // 미지원·실패 → 미리보기 폴백
+    }
+  }
+  download(name,blob);
+  if(IS_IOS){
+    showPngModal(blob,name);
+    pngNote(`파일 앱에 저장했습니다 · 사진첩은 미리보기에서 <b>길게 눌러 저장</b>`);
+  }else{
+    pngNote(`PNG 파일로 저장했습니다 · 사진첩 저장은 <b>🖼 미리보기</b>`);
+  }
+}
+function pngChartBlob(){
+  return new Promise(resolve=>{
+  const svg=$("#chart").querySelector("svg"); if(!svg) return resolve(null);
   const ind=curInd(), r=curReg();
   const vb=svg.getAttribute("viewBox").split(" ").map(Number), W=vb[2], H=vb[3], S=2;
   const clone=svg.cloneNode(true);
@@ -1882,9 +1990,19 @@ function savePNG(){
     const cv=document.createElement("canvas"); cv.width=W*S; cv.height=H*S;
     const ctx=cv.getContext("2d"); ctx.fillStyle=P.bg; ctx.fillRect(0,0,cv.width,cv.height);
     ctx.drawImage(img,0,0,cv.width,cv.height);
-    cv.toBlob(b=>download(`ind${String(ind.no).padStart(2,"0")}_${r.n}.png`,b),"image/png");
+    cv.toBlob(b=>resolve(b?{blob:b,name:`ind${String(ind.no).padStart(2,"0")}_${r.n}.png`}:null),"image/png");
   };
+  img.onerror=()=>resolve(null);
   img.src="data:image/svg+xml;charset=utf-8,"+encodeURIComponent(xml);
+  });
+}
+async function savePNG(){
+  const out=await pngChartBlob(); if(!out) return;
+  await deliverPng(out.blob,out.name);
+}
+async function previewPNG(){
+  const out=await pngChartBlob(); if(!out) return;
+  showPngModal(out.blob,out.name);
 }
 init();
 applyHash();

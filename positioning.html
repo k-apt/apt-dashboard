@@ -265,13 +265,40 @@
     .fgroup.wide{grid-column:span 1}
     .dchips{max-height:108px}
   }
+  /* ── PNG 미리보기(길게 눌러 사진첩 저장) ─────────────────────────── */
+  .prevlink{font-size:12px; font-weight:700; color:var(--acc); text-decoration:none; white-space:nowrap}
+  .prevlink:hover{text-decoration:underline}
+  .pngmodal{position:fixed; inset:0; z-index:95; display:none}
+  .pngmodal.on{display:block}
+  .pngmodal-bd{position:absolute; inset:0; background:rgba(10,16,28,.62)}
+  .pngmodal-in{position:absolute; inset:0; margin:auto; width:min(94vw,860px); height:fit-content; max-height:92vh;
+    display:flex; flex-direction:column; background:var(--card); color:var(--ink);
+    border:1px solid var(--line); border-radius:14px; box-shadow:0 24px 60px rgba(9,14,24,.42); overflow:hidden}
+  .pngmodal-hd{display:flex; align-items:center; gap:10px; padding:11px 13px; border-bottom:1px solid var(--line)}
+  .pngmodal-hd b{flex:1; min-width:0; font-size:12.5px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  .pngmodal-hd button{border:none; background:transparent; color:var(--faint); font-size:15px; line-height:1; padding:5px 7px; cursor:pointer}
+  .pngmodal-body{flex:1; min-height:0; overflow:auto; -webkit-overflow-scrolling:touch; background:var(--bg); padding:10px;
+    display:flex; align-items:center; justify-content:center}
+  .pngmodal-body img{max-width:100%; max-height:100%; width:auto; height:auto; margin:auto; border-radius:6px;
+    -webkit-touch-callout:default; touch-action:manipulation; background:#fff}
+  .pngmodal-ft{display:flex; align-items:center; gap:10px; padding:10px 13px; border-top:1px solid var(--line); flex-wrap:wrap}
+  .pngmodal-hint{flex:1; min-width:170px; font-size:11.5px; color:var(--faint); line-height:1.55}
+  .pngmodal-hint b{color:var(--ink)}
+  body.modalopen{overflow:hidden}
+  @media (max-width:900px){
+    .pngmodal-in{width:100vw; height:100%; max-height:none; border-radius:0; border:none}
+    .pngmodal-body{padding:8px}
+    .pngmodal-hd{padding-top:max(11px,env(safe-area-inset-top))}
+    .pngmodal-ft{padding-bottom:max(10px,env(safe-area-inset-bottom))}
+    .pngmodal-ft .btn{flex:1; justify-content:center}
+  }
 </style>
 </head>
 <body>
 <header>
   <div class="bar">
     <div class="brand">
-      <a class="logo" href="index.html?v=202611241830" title="METRO 83 포털로">◲</a>
+      <a class="logo" href="index.html?v=202611241903" title="METRO 83 포털로">◲</a>
       <div>
         <h1>수도권 83지역 4사분면 포지셔닝 차트 생성기</h1>
         <p>오프라인 단일 파일 · 82개 지역 15,670단지(83개 중 인천 옹진군 데이터 없음) · 인터넷 연결 없이 브라우저에서 바로 실행</p>
@@ -1823,8 +1850,87 @@ function download(blob, name){
   document.body.appendChild(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 4000);
 }
-function savedBadge(name){
-  el.status.insertAdjacentHTML('beforeend', '<span class="sep">|</span><span class="badge ok">저장됨 · ' + esc(name) + '</span>');
+
+/* ---- PNG 저장 — iOS 사진첩(공유 시트) · 미리보기 모달
+   iOS Safari는 <a download>가 '사진'앱이 아니라 '파일'앱에 저장되므로,
+   Web Share Level 2(files) 공유 시트의 「이미지 저장」을 먼저 쓰고
+   미지원·실패·인앱 브라우저에서는 미리보기 모달(길게 눌러 저장)로 폴백한다. */
+const IS_IOS = /iP(hone|ad|od)/.test(navigator.userAgent || '') ||
+  (navigator.platform === 'MacIntel' && (navigator.maxTouchPoints || 0) > 1);
+let LAST_PNG = null;
+function pngFile(blob, name){ try { return new File([blob], name, {type: 'image/png'}); } catch (e){ return null; } }
+function canSharePng(file){
+  try { return !!(file && navigator.canShare && navigator.share && navigator.canShare({files: [file]})); }
+  catch (e){ return false; }
+}
+function showPngModal(blob, name){
+  let m = document.getElementById('pngModal');
+  if (!m){
+    m = document.createElement('div');
+    m.id = 'pngModal'; m.className = 'pngmodal';
+    m.innerHTML = '<div class="pngmodal-bd" data-pngclose="1"></div>'
+      + '<div class="pngmodal-in" role="dialog" aria-modal="true" aria-label="PNG 미리보기">'
+      + '<div class="pngmodal-hd"><b id="pngModalName"></b><button id="pngX" aria-label="닫기">✕</button></div>'
+      + '<div class="pngmodal-body"><img id="pngImg" alt="저장할 차트 이미지"></div>'
+      + '<div class="pngmodal-ft"><span class="pngmodal-hint">이미지를 <b>길게 눌러</b> 「사진에 저장」'
+      + '(안드로이드 「이미지 다운로드」)을 누르면 사진첩에 저장됩니다.</span>'
+      + '<button type="button" class="btn" id="pngDl"><span class="ico">⤓</span>파일로 다운로드</button>'
+      + '<button type="button" class="btn primary" id="pngClose">닫기</button></div></div>';
+    document.body.appendChild(m);
+    m.addEventListener('click', (e) => {
+      const t = e.target;
+      if (!t || !t.dataset) return;
+      if (t.dataset.pngclose === '1' || t.id === 'pngX' || t.id === 'pngClose'){ closePngModal(); return; }
+      if (t.id === 'pngDl' && m._blob) download(m._blob, m._name);
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && m.classList.contains('on')) closePngModal();
+    });
+  }
+  if (m._url) URL.revokeObjectURL(m._url);
+  m._blob = blob; m._name = name; m._url = URL.createObjectURL(blob);
+  document.getElementById('pngModalName').textContent = name;
+  document.getElementById('pngImg').src = m._url;
+  m.classList.add('on'); document.body.classList.add('modalopen');
+  return m;
+}
+function closePngModal(){
+  const m = document.getElementById('pngModal'); if (!m) return;
+  m.classList.remove('on'); document.body.classList.remove('modalopen');
+  if (m._url){
+    const u = m._url; m._url = null;
+    setTimeout(() => { URL.revokeObjectURL(u); const i = document.getElementById('pngImg'); if (i) i.removeAttribute('src'); }, 250);
+  }
+}
+document.addEventListener('click', (e) => {
+  const a = e.target && e.target.closest ? e.target.closest('[data-prev]') : null;
+  if (!a) return;
+  e.preventDefault();
+  if (LAST_PNG) showPngModal(LAST_PNG.blob, LAST_PNG.name);
+});
+async function deliverPng(blob, name){
+  LAST_PNG = {blob: blob, name: name};
+  const file = pngFile(blob, name);
+  if (canSharePng(file)){
+    try {
+      await navigator.share({files: [file], title: name});
+      savedBadge(name, '공유 시트 전달');
+      return;
+    } catch (err){
+      if (err && err.name === 'AbortError') return;      // 사용자가 공유 시트를 닫음 — 조용히 무시
+      showPngModal(blob, name);
+      savedBadge(name, '미리보기 열림');
+      return;
+    }
+  }
+  download(blob, name);
+  savedBadge(name);
+  if (IS_IOS) showPngModal(blob, name);
+}
+function savedBadge(name, label){
+  el.status.insertAdjacentHTML('beforeend', '<span class="sep">|</span><span class="badge ok">'
+    + (label || '저장됨') + ' · ' + esc(name) + '</span>'
+    + (LAST_PNG && LAST_PNG.name === name ? ' <a href="#" data-prev="1" class="prevlink">🖼 미리보기 · 길게 눌러 사진첩 저장</a>' : ''));
 }
 
 el.saveOne.onclick = async () => {
@@ -1834,8 +1940,7 @@ el.saveOne.onclick = async () => {
   const r = state.region, view = currentView();
   const name = view.filtered ? fileNameFiltered(r, view) : fileName(r, state.band, r.b[state.band]);
   const blob = await canvasToBlob(cv);
-  download(blob, name);
-  savedBadge(name);
+  await deliverPng(blob, name);
   state.busy = false; el.saveOne.disabled = false;
 };
 
@@ -1850,8 +1955,7 @@ el.saveAll.onclick = async () => {
     off.width = W; off.height = H;
     drawChart(off.getContext('2d'), r, view);
     const name = fileNameFiltered(r, view);
-    download(await canvasToBlob(off), name);
-    savedBadge(name);
+    await deliverPng(await canvasToBlob(off), name);
     state.busy = false; el.saveAll.disabled = false;
     return;
   }
