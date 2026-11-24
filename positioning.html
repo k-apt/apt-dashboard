@@ -52,6 +52,16 @@
     display:flex; align-items:center; gap:12px; flex-wrap:wrap;
   }
   .zones{display:flex; gap:6px; background:#F1F5F9; border:1px solid var(--line); border-radius:11px; padding:4px}
+  .poptabs{display:flex; gap:5px; margin:0 0 7px}
+  .ptab{flex:1; font:inherit; font-size:12.5px; font-weight:700; padding:6px 8px; border-radius:9px;
+    border:1px solid var(--line); background:var(--panel); color:var(--sub); cursor:pointer}
+  .ptab.on{background:#1D4ED8; border-color:#1D4ED8; color:#fff}
+  .popall{display:flex; gap:6px; align-items:center; margin:0 0 7px; flex-wrap:wrap}
+  .popall button{font:inherit; font-size:11.5px; font-weight:700; padding:5px 9px; border-radius:8px;
+    border:1px solid var(--line); background:var(--panel); color:var(--acc); cursor:pointer}
+  .popall #mselCnt{font-size:11px; color:var(--faint); margin-left:auto}
+  .item.sel{background:rgba(29,78,216,.10)}
+  .item.sel .n{color:#1D4ED8}
   .chip{
     appearance:none; border:0; background:transparent; color:var(--sub); font-family:inherit;
     font-size:13px; font-weight:700; padding:7px 12px; border-radius:8px; cursor:pointer; white-space:nowrap;
@@ -298,7 +308,7 @@
 <header>
   <div class="bar">
     <div class="brand">
-      <a class="logo" href="index.html?v=202611241903" title="METRO 83 포털로">◲</a>
+      <a class="logo" href="index.html?v=202611241939" title="METRO 83 포털로">◲</a>
       <div>
         <h1>수도권 83지역 4사분면 포지셔닝 차트 생성기</h1>
         <p>오프라인 단일 파일 · 82개 지역 15,670단지(83개 중 인천 옹진군 데이터 없음) · 인터넷 연결 없이 브라우저에서 바로 실행</p>
@@ -318,8 +328,19 @@
         <span id="pickName">지역 선택</span><span class="car">▾</span>
       </button>
       <div class="pop" id="pop" hidden>
+        <div class="poptabs">
+          <button type="button" class="ptab on" data-z="서울">서울</button>
+          <button type="button" class="ptab" data-z="경기">경기</button>
+          <button type="button" class="ptab" data-z="인천">인천</button>
+          <button type="button" class="ptab" data-z="전체">전체</button>
+        </div>
+        <div class="popall">
+          <button type="button" id="zoneAll">서울 전체</button>
+          <button type="button" id="mselClear">단일로 보기</button>
+          <span id="mselCnt"></span>
+        </div>
         <input id="q" type="text" placeholder="지역 이름 검색 — 병점, 송파, 부평 …" autocomplete="off" spellcheck="false">
-        <div class="list" id="list" role="listbox"></div>
+        <div class="list" id="list" role="listbox" aria-multiselectable="true"></div>
       </div>
     </div>
     <div class="tabs" id="tabs"></div>
@@ -1074,11 +1095,20 @@ function drawChart(c, region, view){
   const fsLbl = n <= 24 ? 22 : 21;
   const sizes = U.map(u => ({w: tw(c, u.dp, fsLbl, 700), h: fsLbl * 1.12}));
   const bounds = {x0: px0 + 4, x1: px1 - 4, y0: py0 + 4, y1: py1 - 4};
-  const placed = placeLabels(ptsPx, sizes, obstacles, bounds);
+  /* 라벨 상한 — 한 장에 단지가 많으면(합산 뷰) 세대수 상위만 라벨하고, 그 부분집합만 배치 계산 */
+  const LBL_MAX = n > 400 ? 8 : n > 150 ? 14 : n > 60 ? 20 : 30;
+  let lblIdx = [...Array(n).keys()];
+  if (n > LBL_MAX){
+    lblIdx = lblIdx.sort((a, b) => (U[b].hh || 0) - (U[a].hh || 0)).slice(0, LBL_MAX);
+    lblIdx.sort((a, b) => a - b);
+  }
+  const subPlaced = placeLabels(lblIdx.map(i => ptsPx[i]), lblIdx.map(i => sizes[i]), obstacles, bounds);
+  const placedMap = {};
+  lblIdx.forEach((idx, k) => { placedMap[idx] = subPlaced[k]; });
 
   let overlaps = 0, outside = 0, markerHits = 0, obsHits = 0;
-  for (let i = 0; i < n; i++){
-    const b = placed[i].box, u = U[i];
+  for (const i of lblIdx){
+    const b = placedMap[i].box, u = U[i];
     const lx = b.x0, ly = (b.y0 + b.y1) / 2;
     // 지시선 — 마커에서 라벨 박스 가장 가까운 변으로
     const px = ptsPx[i].x, py = ptsPx[i].y;
@@ -1092,10 +1122,12 @@ function drawChart(c, region, view){
     drawText(c, u.dp, lx, ly, {size:fsLbl, weight:700, color: R.dcol[u.d], baseline:'middle', stroke:6});
     // QA
     if (lx < px0 - 1 || b.x1 > px1 + 1 || b.y0 < py0 - 1 || b.y1 > py1 + 1) outside++;
-    for (let j = 0; j < n; j++){
+    for (const j of lblIdx){
       if (j === i) continue;
-      const o = placed[j].box;
+      const o = placedMap[j].box;
       if (Math.min(b.x1, o.x1) - Math.max(b.x0, o.x0) > 1 && Math.min(b.y1, o.y1) - Math.max(b.y0, o.y0) > 1) overlaps++;
+    }
+    for (let j = 0; j < n; j++){
       const q = ptsPx[j];
       const nx = Math.min(Math.max(q.x, b.x0), b.x1), ny = Math.min(Math.max(q.y, b.y0), b.y1);
       if ((nx - q.x) ** 2 + (ny - q.y) ** 2 < (q.r - 1) ** 2) markerHits++;
@@ -1411,7 +1443,7 @@ const AGE_OPTS = [
   {k:'r', label:'30년+ 재건축연한'}
 ];
 
-const state = {zone:'전체', region:null, band:0, busy:false, fOpen:false,
+const state = {zone:'전체', region:null, band:0, busy:false, fOpen:false, msel:[], zoneTab:'서울',
   dongAll:[], dongSel:new Set(),
   hhAll:HH_BUCKETS.map(b => b.k), hhSel:new Set(HH_BUCKETS.map(b => b.k)),
   arAll:AREA_OPTS.map(o => o.k), arSel:new Set(AREA_OPTS.map(o => o.k)),
@@ -1532,23 +1564,69 @@ function applyHashRegion(){
   if (!m) return false;
   let name = m[1];
   try { name = decodeURIComponent(name); } catch (e) {}
-  const r = REGIONS.find(x => x.n === name);
-  if (!r) return false;
-  selectRegion(r.n);
+  const names = name.split(/[+|]/).map(s => s.trim()).filter(Boolean)
+    .filter(n => REGIONS.some(r => r.n === n));
+  if (!names.length) return false;
+  selectRegions(names);
   return true;
 }
 window.addEventListener('hashchange', () => { if (applyHashRegion()) draw(); });
 
-function selectRegion(name){
-  const r = REGIONS.find(x => x.n === name);
+function selectRegion(name){ selectRegions([name]); closePop(); }
+
+/* ── 여러 구 합산 — 4사분면·패널·탭을 합집합으로 재계산 ─────────────── */
+const MCACHE = {};
+function makeBands(U){
+  const ps = U.map(a => +a[4]).filter(p => p > 0).sort((a, b) => a - b);
+  if (!ps.length) return [{lo:0, hi:1e9, l:'전체', s:'전체', k:'1', n:U.length}];
+  const n = Math.max(1, Math.min(24, Math.round(ps.length / 21)));
+  const out = [];
+  for (let i = 0; i < n; i++){
+    const lo = i === 0 ? 0 : ps[Math.floor(i * ps.length / n)];
+    const hi = i === n - 1 ? 1e9 : ps[Math.floor((i + 1) * ps.length / n)];
+    const cnt = U.filter(a => +a[4] >= lo && +a[4] < hi).length;
+    const lbl = i === n - 1 ? fmtEok(lo) + ' 이상' : (i === 0 ? fmtEok(hi) + ' 미만'
+      : fmtEok(lo) + '~' + fmtEok(hi));
+    out.push({lo, hi, l:lbl, s:lbl.replace(/\s/g, ''), k:String(i + 1), n:cnt});
+  }
+  return out;
+}
+function mergeRegions(names){
+  const rs = names.map(n => REGIONS.find(r => r.n === n)).filter(Boolean);
+  if (!rs.length) return null;
+  if (rs.length === 1) return rs[0];
+  const key = rs.map(r => r.n).join('+');
+  if (MCACHE[key]) return MCACHE[key];
+  const u = [].concat(...rs.map(r => r.u));
+  const sum = k => rs.reduce((s, r) => s + (+r[k] || 0), 0);
+  const hh = sum('hh') || 1;
+  const wsum = k => rs.reduce((s, r) => s + (+r[k] || 0) * (+r.hh || 1), 0) / hh;
+  const xs = u.map(a => +a[6]).filter(v => isFinite(v));
+  const ys = u.map(a => +a[8]).filter(v => isFinite(v));
+  const r0 = {
+    n: rs.map(r => r.n).join('+'), z: '합산',
+    c: sum('c'), hh: sum('hh'), ls: sum('ls'), tr: sum('tr'), np_: sum('np_'),
+    xc: +wsum('xc').toFixed(2), yc: +wsum('yc').toFixed(2),
+    medx: +median(xs).toFixed(2), medy: +median(ys).toFixed(2),
+    mx: Math.max(...rs.map(r => +r.mx || 0)), grid: rs[0].grid,
+    b: makeBands(u), u: u, _multi: rs.map(r => r.n)
+  };
+  MCACHE[key] = r0;
+  return r0;
+}
+function selectRegions(names){
+  const uniq = [...new Set((names || []).filter(Boolean))];
+  const r = mergeRegions(uniq.length ? uniq : [REGIONS[0].n]);
   if (!r) return;
-  state.region = r; state.band = 0;
+  state.region = r;
+  state.msel = uniq.length ? uniq : [REGIONS[0].n];
+  state.band = 0;
   resetFiltersFor(r);
-  try { localStorage.setItem('q83.region', name); } catch (e) {}
-  el.pickName.innerHTML = name + ' <span class="cnt">' + r.c + '단지</span>';
+  try { localStorage.setItem('q83.region', state.msel.join('|')); } catch (e) {}
+  el.pickName.innerHTML = (uniq.length > 1 ? '합산 ' + uniq.length + '개 구 · ' : '') +
+    (r.n.length > 34 ? r.n.slice(0, 32) + '…' : r.n) + ' <span class="cnt">' + r.c + '단지</span>';
   buildTabs();
   draw();
-  closePop();
 }
 
 function buildTabs(){
@@ -1769,6 +1847,10 @@ let listCur = -1;
 function renderList(){
   const kw = el.q.value.trim().replace(/\s+/g, '');
   const base = regionsInZone(state.zone);
+  const cnt = document.getElementById('mselCnt');
+  if (cnt) cnt.textContent = (state.msel || []).length > 1 ? '합산 ' + state.msel.length + '개 구' : '';
+  const za = document.getElementById('zoneAll');
+  if (za) za.textContent = (state.zone === '전체' ? '수도권 82개' : state.zone) + ' 전체';
   const hits = base.filter(r => !kw || r.n.replace(/\s+/g, '').includes(kw));
   el.list.innerHTML = '';
   if (!hits.length){
@@ -1805,6 +1887,28 @@ function closePop(){
   el.pickBtn.setAttribute('aria-expanded', 'false');
 }
 el.pickBtn.onclick = e => { e.stopPropagation(); el.pop.hidden ? openPop() : closePop(); };
+/* 권역 탭 · 전체 선택 · 단일 복귀 */
+document.querySelectorAll('.ptab').forEach(b => {
+  b.onclick = () => {
+    state.zoneTab = b.dataset.z; state.zone = b.dataset.z;
+    document.querySelectorAll('.ptab').forEach(x => x.classList.toggle('on', x.dataset.z === state.zoneTab));
+    buildZones(); renderList();
+  };
+});
+const zAllBtn = document.getElementById('zoneAll');
+if (zAllBtn) zAllBtn.onclick = () => {
+  const list = regionsInZone(state.zone === '전체' ? '전체' : state.zone).map(r => r.n);
+  const allOn = list.every(n => (state.msel || []).includes(n));
+  const cur = new Set(state.msel || []);
+  if (allOn) list.forEach(n => cur.delete(n)); else list.forEach(n => cur.add(n));
+  if (!cur.size) cur.add(state.region ? state.region.n : REGIONS[0].n);
+  selectRegions([...cur]); renderList();
+};
+const mClear = document.getElementById('mselClear');
+if (mClear) mClear.onclick = () => {
+  const keep = (state.msel && state.msel[0]) || REGIONS[0].n;
+  selectRegions([keep]); renderList();
+};
 el.q.oninput = () => { listCur = -1; renderList(); };
 el.q.onkeydown = e => {
   const items = [...el.list.querySelectorAll('.item[data-name]')];
@@ -2047,8 +2151,10 @@ state.fOpen = window.innerWidth >= 1100;
 applyPanel();
 {
   const saved = (() => { try { return localStorage.getItem('q83.region'); } catch (e){ return null; } })();
-  const first = (saved && REGIONS.find(r => r.n === saved)) || REGIONS.find(r => r.n === '화성시 병점구') || REGIONS[0];
-  selectRegion(first.n);
+  const savedList = (saved || '').split('|').map(s => REGIONS.find(r => r.n === s)).filter(Boolean);
+  const first = savedList.length ? savedList
+    : [REGIONS.find(r => r.n === '화성시 병점구') || REGIONS[0]];
+  selectRegions(first.map(r => r.n));
 }
 try { applyHashRegion(); } catch (e) {}
 renderList();
@@ -2061,6 +2167,8 @@ function bandView(r, i){
 window.APP = {
   regions: REGIONS.map(r => r.n),
   select: selectRegion,
+  selectMany: selectRegions,
+  merged(n){ return mergeRegions(n); },
   band(i){ if (filterActive()) clearFilter(); state.band = i; buildTabs(); draw(); return this.info(); },
   bands(){ return state.region.b.map(b => ({l:b.l, s:b.s, n:b.n})); },
   dongs(){ return regionCtx(state.region).dongs.slice(); },
