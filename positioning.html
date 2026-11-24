@@ -889,8 +889,17 @@ function drawChart(c, region, view){
     }
     return keep;
   }
-  const tickX = pickTicks(allTicksX, xmap, xHi, 60, pxPerX);
-  const tickY = pickTicks(allTicksY, ymap, yHi, 42, pxPerY);
+  let tickX = pickTicks(allTicksX, xmap, xHi, 60, pxPerX);
+  let tickY = pickTicks(allTicksY, ymap, yHi, 42, pxPerY);
+  // 필터로 단지 수가 적으면 눈금이 화면 밖으로 밀려 사라진다 — 보이는 구간 기준으로 다시 만든다
+  if (!tickX.some(t => t.du >= xLo - 1e-9)){
+    tickX = niceTicks(Math.max(xLo, 0), xHi, 6).filter(v => xmap.u(v) <= xHi + 1e-9)
+      .map(v => ({v: v, du: xmap.u(v)}));
+  }
+  if (!tickY.some(t => t.du >= yLo - 1e-9)){
+    tickY = niceTicks(Math.max(yLo, 0), yHi, 6).filter(v => ymap.u(v) <= yHi + 1e-9)
+      .map(v => ({v: v, du: ymap.u(v)}));
+  }
 
   c.save();
   c.strokeStyle = COL.grid; c.lineWidth = 1.6; c.setLineDash([2, 7]);
@@ -1558,9 +1567,7 @@ function syncFilter(view){
     ? rows.map(r => '· ' + r).join('<br>') + '<br>· 결과 <b>' + U.length + '단지</b> · ' + comma(U.reduce((s, u) => s + u.hh, 0)) + '세대'
     : '<span style="color:var(--ghost)">조건 없음 — 지역 전체 ' + state.region.c + '단지</span>';
 
-  el.saveAll.innerHTML = act
-    ? '<span class="ico">⤓</span>필터 결과 PNG 저장'
-    : '<span class="ico">⤓</span>이 지역 전체 PNG 일괄 저장';
+  el.saveAll.style.display = act ? 'none' : '';   // 필터 모드에서는 '현재 차트 PNG 저장'이 필터 결과를 저장
 }
 
 function draw(){
@@ -1588,7 +1595,9 @@ function draw(){
   }
   parts.push('3,600×1,980px · ' + ms + 'ms');
   parts.push('<span class="badge ' + (bad ? 'warn' : 'ok') + '">' + (bad ? '겹침 ' + bad : '라벨 겹침 0') + '</span>');
-  parts.push('<span class="hint"><kbd>←</kbd><kbd>→</kbd> 장 이동 · <kbd>/</kbd> 지역 검색</span>');
+  parts.push(view.filtered
+    ? '<span class="hint">체크를 바꾸면 즉시 반영 · <kbd>/</kbd> 지역 검색</span>'
+    : '<span class="hint"><kbd>←</kbd><kbd>→</kbd> 장 이동 · <kbd>/</kbd> 지역 검색</span>');
   el.status.innerHTML = parts.join('<span class="sep">|</span>');
   syncFilter(view);
   rebuildChips();
