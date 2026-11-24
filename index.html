@@ -6,25 +6,78 @@
 <title>수도권 83지역 부동산 데이터 대시보드</title>
 <style>
   body { font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; margin: 0; background: #f5f7fb; color: #161b26; }
-  .wrap { max-width: 720px; margin: 0 auto; padding: 28px 18px; }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 28px 18px 56px; }
   h1 { font-size: 22px; margin: 0 0 6px; }
   p.sub { color: #5b6476; font-size: 14px; margin: 0 0 20px; }
+  h2 { font-size: 15px; margin: 28px 0 10px; color: #3b4354; letter-spacing: -0.01em; }
   .card { display: block; background: #fff; border: 1px solid #e2e7f0; border-radius: 14px; padding: 18px; margin-bottom: 12px; text-decoration: none; color: inherit; box-shadow: 0 2px 8px rgba(16,24,40,0.04); }
   .card:hover { border-color: #2563eb; }
   .badge { display: inline-block; font-size: 12px; font-weight: 600; color: #1d4ed8; background: #eff6ff; padding: 3px 9px; border-radius: 999px; margin-bottom: 8px; }
+  .badge.new { color: #0f766e; background: #ecfdf5; }
   .title { font-size: 17px; font-weight: 700; margin-bottom: 4px; }
   .desc { font-size: 13px; color: #5b6476; }
+  .foot { font-size: 12px; color: #8b93a1; margin-top: 26px; line-height: 1.7; }
 </style>
 </head>
 <body>
 <div class="wrap">
   <h1>수도권 83지역 부동산 데이터 대시보드</h1>
   <p class="sub">PC·아이폰 Safari 어디서든 바로 열어보는 인터랙티브 분석 앱</p>
+
   <a class="card" href="./positioning.html">
     <span class="badge">LIVE</span>
     <div class="title">📊 수도권 83지역 4사분면 포지셔닝 차트 생성기</div>
     <div class="desc">82개 지역 · 15,670단지 · 출회율 × 회전율 · 가격대별 PNG/ZIP 저장</div>
   </a>
+
+  <h2>📈 지표 50선 — 7개 카테고리 대시보드</h2>
+
+  <a class="card" href="./indicators-01-macro-cycle.html">
+    <span class="badge new">NEW</span>
+    <div class="title">01 거시수급 · 사이클</div>
+    <div class="desc">#1~#7 · 3년 입주 과부족 · 3040 순이동 · 공급×수요 4사분면 · 외지인 · 상승 탄력(베타) · 하락 방어력 · 시장 체온계 스프레드</div>
+  </a>
+
+  <a class="card" href="./indicators-02-location-income.html">
+    <span class="badge new">NEW</span>
+    <div class="title">02 입지 · 소득 · 생활인프라</div>
+    <div class="desc">#8~#14 · 25개 거점 출퇴근 · 학군·초품아 · 학원가 · 경사도 · 역세권·교통호재 · 동별 연봉 · PIR</div>
+  </a>
+
+  <a class="card" href="./indicators-03-complex-spec.html">
+    <span class="badge new">NEW</span>
+    <div class="title">03 단지상품성 · 보유비용</div>
+    <div class="desc">#15~#20 · 세대수 등급 · 세대당 주차 · 건폐율·용적률 · 전용률 · 신축-구축 프리미엄 · 보유세 부담률</div>
+  </a>
+
+  <a class="card" href="./indicators-04-price-valuation.html">
+    <span class="badge new">NEW</span>
+    <div class="title">04 가격 · 밸류에이션</div>
+    <div class="desc">#21~#28 · 전용/공급 평당가 · 괴리율 · 전고점 회복률 · 신고가 비율 · 전세가율 · 평형간 격차 · 1km 키맞추기 · 공시가 현실화율</div>
+  </a>
+
+  <a class="card" href="./indicators-05-liquidity-negotiation.html">
+    <span class="badge new">NEW</span>
+    <div class="title">05 유동성 · 급매 · 협상력</div>
+    <div class="desc">#29~#37 · 출회율 · 회전율 · 매물 적체 · 유동성 편차 · 급매·하향률 · 소진 속도 · 해제율 · 전세 갱신율 · 네고 스코어</div>
+  </a>
+
+  <a class="card" href="./indicators-06-redevelopment.html">
+    <span class="badge new">NEW</span>
+    <div class="title">06 정비사업 · 특수트랙</div>
+    <div class="desc">#38~#44 · 대지지분 매수단가 · 용적률 여유분 · 관리처분 안전마진 · 급지표 티어 · 청약 vs 기축 · 미분양 · 경매 안전마진</div>
+  </a>
+
+  <a class="card" href="./indicators-07-final-screening.html">
+    <span class="badge new">NEW</span>
+    <div class="title">07 최종스크리닝 · 실행타이밍</div>
+    <div class="desc">#45~#50 · 실거주/투자 통합 스코어 · 전세 하단 지지력 · 입주장 캘린더 · 토허제 · LTV/DSR 한도 · 예산 맞춤 TOP</div>
+  </a>
+
+  <div class="foot">
+    기준일 2026-11-24 · 서울 25구 + 경기 47개 시·군·구 + 인천 11개 구·군 (83개 지역)<br>
+    각 앱은 데이터 내장 단일 HTML — 설치·서버·인터넷 없이 동작하며, 차트 PNG와 표 CSV를 바로 저장할 수 있습니다.
+  </div>
 </div>
 </body>
 </html>
