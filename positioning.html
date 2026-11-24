@@ -2,11 +2,12 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>수도권 83지역 4사분면 포지셔닝 차트 생성기</title>
+<script>(function(){try{var t=localStorage.getItem('apt_theme');if(t!=='light'&&t!=='dark')t='light';document.documentElement.setAttribute('data-theme',t);}catch(e){document.documentElement.setAttribute('data-theme','light');}})();</script>
 <style>
   :root{
-    --ink:#0F172A; --sub:#475569; --faint:#64748B; --ghost:#94A3B8;
+    --ink:#0F172A; --sub:#475569; --faint:#64748B; --ghost:#6E7B8C;
     --line:#E2E8F0; --line2:#CBD5E1; --bg:#EEF2F7; --card:#FFFFFF;
     --acc:#1D4ED8; --acc-soft:#EFF6FF; --ok:#15803D;
   }
@@ -16,8 +17,6 @@
     background:var(--bg); color:var(--ink);
     font-family:"Malgun Gothic","Apple SD Gothic Neo","Noto Sans KR","NanumGothic",sans-serif;
     -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
-    -webkit-text-size-adjust:100%; text-size-adjust:100%;
-    word-break:keep-all; overflow-wrap:break-word;
   }
   header{
     position:sticky; top:0; z-index:40; background:rgba(255,255,255,.97);
@@ -218,15 +217,43 @@
   .btn.small{font-size:12.5px; padding:8px 12px; justify-content:center}
   .tabs.off{opacity:.45}
 
+  /* ---------------- 화이트 / 다크 테마 ---------------- */
+  .btn.tglbtn{flex:none; padding:10px 12px; min-width:42px; justify-content:center}
+  html[data-theme="dark"]{
+    --ink:#F1F5F9; --sub:#94A3B8; --faint:#94A3B8; --ghost:#8B9AAF;
+    --line:#334155; --line2:#3B4A62; --bg:#0F172A; --card:#1E293B;
+    --acc:#60A5FA; --acc-soft:#1E3A63; --ok:#34D399;
+  }
+  html[data-theme="dark"] header{background:rgba(15,23,42,.97); box-shadow:0 1px 3px rgba(0,0,0,.45)}
+  html[data-theme="dark"] .btn,html[data-theme="dark"] .pick,html[data-theme="dark"] .tab,
+  html[data-theme="dark"] .fbtn,html[data-theme="dark"] .fmini button,html[data-theme="dark"] .pop,
+  html[data-theme="dark"] .dchip span{background:#243146; border-color:var(--line2); color:var(--ink)}
+  html[data-theme="dark"] .btn:hover,html[data-theme="dark"] .tab:hover,html[data-theme="dark"] .fbtn:hover,
+  html[data-theme="dark"] .fmini button:hover,html[data-theme="dark"] .dchip span:hover{background:#2D3E58; border-color:#475569}
+  html[data-theme="dark"] .btn.primary{background:#2563EB; border-color:#2563EB; color:#fff}
+  html[data-theme="dark"] .zones,html[data-theme="dark"] .seg,html[data-theme="dark"] .fbtn .fsum,
+  html[data-theme="dark"] #q,html[data-theme="dark"] .dual .dtrack{background:#1A263C}
+  html[data-theme="dark"] .chip.on,html[data-theme="dark"] .seg button.on{background:#243146; color:var(--acc); box-shadow:none}
+  html[data-theme="dark"] .tab.on{background:#334155; border-color:#475569; color:#F1F5F9}
+  html[data-theme="dark"] .tab.on .no,html[data-theme="dark"] .tab.on .c{color:#94A3B8}
+  html[data-theme="dark"] .stage{background:#1E293B; border-color:var(--line); box-shadow:none}
+  html[data-theme="dark"] .fgroup{background:#1E293B; border-color:var(--line)}
+  html[data-theme="dark"] .item:hover,html[data-theme="dark"] .item.cur{background:#1E3A63}
+  html[data-theme="dark"] .dchip span i{background:#243146}
+  html[data-theme="dark"] .dual input[type=range]::-webkit-slider-thumb{background:#0F172A; border-color:var(--acc)}
+  html[data-theme="dark"] .dual input[type=range]::-moz-range-thumb{background:#0F172A; border-color:var(--acc)}
+  html[data-theme="dark"] .tabs.scroll::-webkit-scrollbar-thumb{background:#3B4A62}
+  html[data-theme="dark"] #q,html[data-theme="dark"] .prange input{color:var(--ink)}
+  html[data-theme="dark"] .prange input{background:#1A263C; border-color:var(--line2)}
+  html[data-theme="dark"] .seg button.on{color:var(--acc)}
+  html[data-theme="dark"] .badge.ok{background:#0E3B2E; border-color:#1B6B52; color:#6EE7B7}
+  html[data-theme="dark"] .badge.warn{background:#3A2F12; border-color:#6B5416; color:#F3D68A}
   @media (max-width:1240px){
     .fpanel .inner{grid-template-columns:repeat(2,minmax(0,1fr))}
   }
   @media (max-width:900px){
-    .bar,.controls,main,.filterbar,.fpanel{
-      padding-left:max(12px,env(safe-area-inset-left));
-      padding-right:max(12px,env(safe-area-inset-right));
-    }
-    h1{font-size:16px;white-space:normal}
+    .bar,.controls,main,.filterbar,.fpanel{padding-left:12px; padding-right:12px}
+    h1{font-size:16px}
     .brand p{display:none}
     .pick{min-width:170px}
     .pop{width:min(88vw,352px)}
@@ -244,13 +271,14 @@
 <header>
   <div class="bar">
     <div class="brand">
-      <div class="logo">◲</div>
+      <a class="logo" href="index.html" title="METRO 83 포털로">◲</a>
       <div>
         <h1>수도권 83지역 4사분면 포지셔닝 차트 생성기</h1>
         <p>오프라인 단일 파일 · 82개 지역 15,670단지(83개 중 인천 옹진군 데이터 없음) · 인터넷 연결 없이 브라우저에서 바로 실행</p>
       </div>
     </div>
     <div class="acts">
+      <button class="btn tglbtn" id="themeBtn" type="button" title="화이트/다크 테마" aria-label="다크 모드로 전환">🌙</button>
       <button class="btn" id="zoomBtn" title="차트를 크게 보기 (화면 폭 기준)"><span class="ico">⊕</span>확대 보기</button>
       <button class="btn primary" id="saveOne"><span class="ico">⤓</span>현재 차트 PNG 저장</button>
       <button class="btn" id="saveAll"><span class="ico">⤓</span>이 지역 전체 PNG 일괄 저장</button>
@@ -386,18 +414,27 @@ const FAM = '"Malgun Gothic","Apple SD Gothic Neo","Noto Sans KR","NanumGothic",
 const EOK = 10000;
 const BAND_MIN = 16, BAND_MAX = 27;
 
-const COL = {
+const COL_LIGHT = {
   ink:'#0F172A', sub:'#475569', faint:'#64748B', ghost:'#94A3B8',
-  grid:'#E2E8F0', spine:'#94A3B8', cut:'#475569', leader:'#B9C6D6', list:'#334155'
+  grid:'#E2E8F0', spine:'#94A3B8', cut:'#475569', leader:'#B9C6D6', list:'#334155',
+  bg:'#FFFFFF', chip:'rgba(255,255,255,.94)'
 };
+const COL_DARK = {
+  ink:'#F1F5F9', sub:'#94A3B8', faint:'#94A3B8', ghost:'#64748B',
+  grid:'#2E3E56', spine:'#64748B', cut:'#94A3B8', leader:'#4E6584', list:'#CBD5E1',
+  bg:'#1E293B', chip:'rgba(30,41,59,.94)'
+};
+const COL = Object.assign({}, COL_LIGHT);
+const QBG_LIGHT = {'①':'rgba(240,253,244,0.72)','②':'rgba(254,242,242,0.72)','③':'rgba(239,246,255,0.72)','④':'rgba(248,250,252,0.88)'};
+const QBG_DARK  = {'①':'rgba(21,128,61,0.20)','②':'rgba(185,28,28,0.22)','③':'rgba(29,78,216,0.22)','④':'rgba(100,116,139,0.20)'};
 const PALETTE = ['#DC2626','#2563EB','#059669','#7C3AED','#EA580C','#0891B2','#BE185D','#4F46E5','#65A30D','#B45309','#0F766E','#7E22CE','#B91C1C','#1E40AF'];
 const MARKERS = ['circle','square','triangle','diamond','plus','down','x','star'];
 const Q_ORDER = ['①','②','③','④'];
 const QSTYLE = {
-  '①':{name:'① 순환 활발 · 환금성', color:'#15803D', bg:'rgba(240,253,244,0.72)'},
-  '②':{name:'② 매물적체 · 네고유리', color:'#B91C1C', bg:'rgba(254,242,242,0.72)'},
-  '③':{name:'③ 품귀 · 상승압력', color:'#1D4ED8', bg:'rgba(239,246,255,0.72)'},
-  '④':{name:'④ 거래 침체 · 실거주 고착', color:'#64748B', bg:'rgba(248,250,252,0.88)'},
+  '①':{name:'① 순환 활발 · 환금성', color:'#15803D', bg:QBG_LIGHT['①']},
+  '②':{name:'② 매물적체 · 네고유리', color:'#B91C1C', bg:QBG_LIGHT['②']},
+  '③':{name:'③ 품귀 · 상승압력', color:'#1D4ED8', bg:QBG_LIGHT['③']},
+  '④':{name:'④ 거래 침체 · 실거주 고착', color:'#64748B', bg:QBG_LIGHT['④']},
   '⑤':{name:'⑤ 2026년 매매 0건', color:'#94A3B8'}
 };
 
@@ -463,7 +500,7 @@ function drawText(c, s, x, y, o){
   c.textBaseline = o.baseline || 'alphabetic';
   if (o.stroke){
     c.lineJoin = 'round'; c.miterLimit = 2;
-    c.lineWidth = o.stroke; c.strokeStyle = o.strokeColor || '#FFFFFF';
+    c.lineWidth = o.stroke; c.strokeStyle = o.strokeColor || COL.bg;
     c.strokeText(s, x, y);
   }
   c.fillStyle = o.color || COL.ink;
@@ -757,7 +794,7 @@ function drawEmpty(c, region, view){
   c.__mc = new Map();
   c.save();
   c.clearRect(0, 0, W, H);
-  c.fillStyle = '#FFFFFF'; c.fillRect(0, 0, W, H);
+  c.fillStyle = COL.bg; c.fillRect(0, 0, W, H);
   c.textBaseline = 'alphabetic';
   const t = region.n + ' 4사분면 포지셔닝 — [' + view.l + ']  0단지';
   drawText(c, t, 94, 46, {size:titleSize(c, t), weight:800, color:COL.ink, baseline:'top'});
@@ -784,7 +821,7 @@ function drawChart(c, region, view){
   c.__mc = new Map();
   c.save();
   c.clearRect(0, 0, W, H);
-  c.fillStyle = '#FFFFFF'; c.fillRect(0, 0, W, H);
+  c.fillStyle = COL.bg; c.fillRect(0, 0, W, H);
   c.textBaseline = 'alphabetic';
 
   /* ---- 축 */
@@ -852,7 +889,7 @@ function drawChart(c, region, view){
       const cy = y0 + ch.row * rowH + lf * 0.62;
       markerPath(c, R.dmkr[ch.d], 94 + ch.x + 10, cy, lf * 0.40);
       c.fillStyle = R.dcol[ch.d]; c.fill();
-      c.lineWidth = 2; c.strokeStyle = '#FFFFFF'; c.stroke();
+      c.lineWidth = 2; c.strokeStyle = COL.bg; c.stroke();
       drawText(c, ch.label, 94 + ch.x + 26, cy, {size:lf, weight:500, color:'#334155', baseline:'middle'});
     }
     legendBottom = y0 + rows * rowH + 6;
@@ -943,7 +980,7 @@ function drawChart(c, region, view){
   if (xmap.on){
     const bx = X(xmap.u(xmap.cut));
     c.save(); c.setLineDash([]);
-    c.fillStyle = '#FFFFFF'; c.fillRect(bx - 24, py1 - 7, 48, 14);
+    c.fillStyle = COL.bg; c.fillRect(bx - 24, py1 - 7, 48, 14);
     c.strokeStyle = '#64748B'; c.lineWidth = 3; c.lineCap = 'round';
     for (const o of [-9, 9]){
       c.beginPath(); c.moveTo(bx + o - 8, py1 + 10); c.lineTo(bx + o + 8, py1 - 10); c.stroke();
@@ -953,7 +990,7 @@ function drawChart(c, region, view){
   if (ymap.on){
     const by = Y(ymap.u(ymap.cut));
     c.save(); c.setLineDash([]);
-    c.fillStyle = '#FFFFFF'; c.fillRect(px0 - 7, by - 24, 14, 48);
+    c.fillStyle = COL.bg; c.fillRect(px0 - 7, by - 24, 14, 48);
     c.strokeStyle = '#64748B'; c.lineWidth = 3; c.lineCap = 'round';
     for (const o of [-9, 9]){
       c.beginPath(); c.moveTo(px0 - 10, by + o - 8); c.lineTo(px0 + 10, by + o + 8); c.stroke();
@@ -980,7 +1017,7 @@ function drawChart(c, region, view){
     let x0 = align === 'right' ? x - w : x, y0 = baseline === 'bottom' ? y - h : y;
     const r = 7;
     c.save();
-    c.fillStyle = 'rgba(255,255,255,.94)';
+    c.fillStyle = COL.chip;
     c.beginPath();
     c.moveTo(x0 + r, y0); c.lineTo(x0 + w - r, y0); c.quadraticCurveTo(x0 + w, y0, x0 + w, y0 + r);
     c.lineTo(x0 + w, y0 + h - r); c.quadraticCurveTo(x0 + w, y0 + h, x0 + w - r, y0 + h);
@@ -1002,8 +1039,8 @@ function drawChart(c, region, view){
     const u = U[i], p = ptsPx[i];
     const zero = u.y <= 0;
     markerPath(c, R.dmkr[u.d], p.x, p.y, p.r);
-    if (zero){ c.fillStyle = '#FFFFFF'; c.fill(); c.lineWidth = 3.2; c.strokeStyle = R.dcol[u.d]; c.stroke(); }
-    else { c.fillStyle = R.dcol[u.d]; c.fill(); c.lineWidth = 2.4; c.strokeStyle = '#FFFFFF'; c.stroke(); }
+    if (zero){ c.fillStyle = COL.bg; c.fill(); c.lineWidth = 3.2; c.strokeStyle = R.dcol[u.d]; c.stroke(); }
+    else { c.fillStyle = R.dcol[u.d]; c.fill(); c.lineWidth = 2.4; c.strokeStyle = COL.bg; c.stroke(); }
   }
 
   /* ---- 라벨 */
@@ -1237,6 +1274,7 @@ function drawNotes(c, region, U, view, xmap, ymap){
 const cv = document.getElementById('cv');
 const g2d = cv.getContext('2d');
 const el = {
+  themeBtn: document.getElementById('themeBtn'),
   zones: document.getElementById('zones'),
   tabs: document.getElementById('tabs'),
   pickBtn: document.getElementById('pickBtn'),
@@ -1287,6 +1325,35 @@ const el = {
   baseSeg: document.getElementById('baseSeg'),
   baseNote: document.getElementById('baseNote')
 };
+
+/* ---------------- 화이트 / 다크 테마 (localStorage: apt_theme) ---------------- */
+function paintTheme(){
+  const dark = document.documentElement.getAttribute('data-theme') === 'dark';
+  if (el.themeBtn){
+    el.themeBtn.textContent = dark ? '☀️' : '🌙';
+    el.themeBtn.setAttribute('aria-label', dark ? '라이트 모드로 전환' : '다크 모드로 전환');
+  }
+}
+function applyCanvasTheme(){
+  const dark = document.documentElement.getAttribute('data-theme') === 'dark';
+  Object.assign(COL, dark ? COL_DARK : COL_LIGHT);
+  for (const k of Object.keys(QSTYLE)){
+    if (QBG_LIGHT[k]) QSTYLE[k].bg = (dark ? QBG_DARK : QBG_LIGHT)[k];
+  }
+}
+function setTheme(t){
+  document.documentElement.setAttribute('data-theme', t);
+  try{ localStorage.setItem('apt_theme', t); }catch(e){}
+  paintTheme();
+  applyCanvasTheme();
+  if (typeof draw === 'function') draw();
+}
+if (el.themeBtn){
+  el.themeBtn.onclick = () => setTheme(
+    document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+}
+applyCanvasTheme();
+paintTheme();
 
 el.zoomBtn.onclick = () => {
   const on = el.stage.classList.toggle('zoom');
