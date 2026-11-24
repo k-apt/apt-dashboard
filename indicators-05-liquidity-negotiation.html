@@ -101,7 +101,7 @@ button.small{padding:4px 9px;font-size:12px;border-radius:7px}
 .pricerow{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .pricerow input[type=number]{width:88px;padding:6px 8px}
 input[type=range]{width:150px;accent-color:#2f6fd0}
-.fnote{font-size:11.5px;color:#a0761c;background:var(--panel)8e6;border:1px solid #f2e0b3;
+.fnote{font-size:11.5px;color:#a0761c;background:#fff8e6;border:1px solid #f2e0b3;
   border-radius:8px;padding:6px 10px;margin-top:8px;display:none}
 
 .grid{display:grid;grid-template-columns:1fr 360px;gap:16px;align-items:start}
@@ -137,15 +137,32 @@ tbody tr{cursor:pointer}
 tbody tr:hover{background:#f7f9fc}
 tbody tr.sel{background:#eaf1fd}
 tbody tr.sel td{font-weight:700}
+tbody tr.qhit{background:#FFF7E6}
+tbody tr.qhit td{font-weight:700;color:#8a5a00}
+html[data-theme="dark"] tbody tr.qhit{background:#3A2F12}
+html[data-theme="dark"] tbody tr.qhit td{color:#F3D68A}
 .tablewrap{max-height:520px;overflow:auto;border:1px solid var(--line);border-radius:10px}
 .tablebar{display:flex;gap:10px;align-items:center;margin-bottom:10px;flex-wrap:wrap}
 .tablebar input[type=text]{min-width:200px}
 .pager{display:flex;gap:6px;align-items:center;margin-left:auto;font-size:12px;color:var(--sub)}
 .note{font-size:11.5px;color:var(--sub);margin-top:10px;line-height:1.6}
 .tag{display:inline-block;font-size:11px;padding:2px 8px;border-radius:999px;background:var(--soft);color:#3f4a5c}
-.warn{background:var(--panel)8e6;border:1px solid #f2e0b3;color:#8a6b1f;border-radius:9px;padding:8px 12px;font-size:12px;margin-bottom:10px;display:none}
+.warn{background:#fff8e6;border:1px solid #f2e0b3;color:#8a6b1f;border-radius:9px;padding:8px 12px;font-size:12px;margin-bottom:10px;display:none}
 .foot{margin-top:22px;font-size:11.5px;color:var(--sub);border-top:1px solid var(--line);padding-top:12px}
 
+.catbar{display:flex;gap:6px;overflow-x:auto;overscroll-behavior-x:contain;
+  padding:2px 0 10px;margin:0 0 12px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.catbar::-webkit-scrollbar{display:none}
+.catchip{flex:none;display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:700;
+  color:var(--sub);background:var(--panel);border:1px solid var(--line);border-radius:999px;
+  padding:6px 11px;text-decoration:none;white-space:nowrap;letter-spacing:-.02em}
+.catchip b{font-weight:800;font-size:11px;color:#6F7889;font-variant-numeric:tabular-nums}
+.catchip:hover{color:var(--ink);background:var(--hover);border-color:#c8d2e2}
+.catchip.on{color:#fff;background:#1d4ed8;border-color:#1d4ed8}
+.catchip.on b{color:#bfdbfe}
+html[data-theme="dark"] .catchip.on{color:#0F172A;background:#93C5FD;border-color:#93C5FD}
+html[data-theme="dark"] .catchip.on b{color:#1E3A63}
+html[data-theme="dark"] .catchip b{color:#7C8BA1}
 .homelink{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:700;
   color:var(--sub);text-decoration:none;border:1px solid var(--line);background:var(--panel);
   border-radius:999px;padding:4px 10px;margin-bottom:8px}
@@ -276,6 +293,8 @@ html[data-theme="dark"] .picker{box-shadow:none}
   </div>
 </header>
 
+<nav class="catbar" id="catbar" aria-label="카테고리 빠른 전환"></nav>
+
 <div class="guide" id="guide"></div>
 
 <div class="picker">
@@ -403,7 +422,7 @@ const STATE = {r: REGIONS.findIndex(x=>x.n==="송파구"), ind: INDS[0].no, view
                sort:{col:null,dir:-1}, page:0, q:"",
                dongs:new Set(), tiers:new Set(), areas:new Set(), types:new Set(), ages:new Set(),
                pmin:0, pmax:MAXP, view2:"chart", pick:null, mapAll:false, unit:"region",
-               area:null};
+               area:null, qkeep:""};
 if(STATE.r<0) STATE.r=0;
 
 const SIGNED = /차|증감|갭|스프레드|낙폭|순이동|마진|증가|감소|회복률|괴리|할인|현실화추세/;
@@ -534,6 +553,34 @@ function init(){
   $("#title").textContent=M.title;
   $("#summary").textContent=M.summary;
   $("#meta").innerHTML=`기준일 ${M.date} · 83개 지역<br>빌드 ${M.built} · 오프라인 단일 파일`;
+  const CATS=[["01","거시","indicators-01-macro-cycle.html"],["02","입지","indicators-02-location-income.html"],
+    ["03","상품성","indicators-03-complex-spec.html"],["04","가격","indicators-04-price-valuation.html"],
+    ["05","유동성","indicators-05-liquidity-negotiation.html"],["06","정비","indicators-06-redevelopment.html"],
+    ["07","스크리닝","indicators-07-final-screening.html"]];
+  const cb=$("#catbar");
+  if(cb){
+    cb.innerHTML="";
+    CATS.forEach(([no,lab,file])=>{
+      const a=document.createElement("a");
+      a.className="catchip"+((String(M.cat).trim()===no)?" on":"");
+      a.href=file; a.dataset.cat=no;
+      a.innerHTML=`<b>${no}</b>${lab}`;
+      if(String(M.cat).trim()===no) a.setAttribute("aria-current","page");
+      cb.appendChild(a);
+    });
+    const syncCat=()=>{
+      const q=["region="+encodeURIComponent(curReg().n)];
+      if(STATE.dongs.size) q.push("dong="+encodeURIComponent([...STATE.dongs].join(",")));
+      const qq=STATE.q||STATE.qkeep;
+      if(qq) q.push("q="+encodeURIComponent(qq));
+      if(STATE.area) q.push("area="+encodeURIComponent(STATE.area));
+      const h="#"+q.join("&");
+      cb.querySelectorAll(".catchip").forEach(a=>{ a.href=a.href.split("#")[0]+h; });
+    };
+    cb.__sync=syncCat; syncCat();
+  }
+  const hl=document.querySelector(".homelink");
+  if(hl) hl.href="index.html?v="+String(M.built||M.date).replace(/[^0-9]/g,"");
   $("#guide").innerHTML=M.guide.map(g=>`<div>${g}</div>`).join("");
   const sel=$("#regionSel"), groups={};
   REGIONS.forEach((r,i)=>{(groups[r.a]=groups[r.a]||[]).push([i,r]);});
@@ -560,7 +607,8 @@ function init(){
   $("#prmin").oninput=e=>{STATE.pmin=+e.target.value; if(STATE.pmin>STATE.pmax) STATE.pmin=STATE.pmax; syncPrice(); render();};
   $("#prmax").oninput=e=>{STATE.pmax=+e.target.value; if(STATE.pmax<STATE.pmin) STATE.pmax=STATE.pmin; syncPrice(); render();};
   $("#pReset").onclick=()=>{STATE.pmin=0; STATE.pmax=MAXP; syncPrice(); render();};
-  $("#q").oninput=e=>{STATE.q=e.target.value.trim(); STATE.page=0; renderTable();};
+  $("#q").oninput=e=>{STATE.q=e.target.value.trim(); STATE.qkeep=""; STATE.page=0; renderTable();
+    const cbEl=$("#catbar"); if(cbEl&&cbEl.__sync) cbEl.__sync();};
   $("#tabReg").onclick=()=>{STATE.view="reg"; STATE.page=0; renderTable();};
   $("#tabDong").onclick=()=>{STATE.view="dong"; STATE.page=0; renderTable();};
   $("#tabDet").onclick=()=>{STATE.view="det"; STATE.page=0; renderTable();};
@@ -713,6 +761,8 @@ function render(){
   });
   const pnode=$("#pnote");
   if(pnode) pnode.innerHTML=`현재 <b>#${ind.no} ${esc(ind.name)}</b> · 지표 ${INDS.length}개`;
+  const cbEl=$("#catbar");
+  if(cbEl && cbEl.__sync) cbEl.__sync();
   const acEl=$("#areaChip");
   if(acEl){
     acEl.style.display=STATE.area?"inline-block":"none";
@@ -1274,6 +1324,7 @@ function renderTable(){
   slice.forEach(row=>{
     const tr=el("tr");
     if(STATE.view==="reg" && row.i===STATE.r) tr.classList.add("sel");
+    if(STATE.q && Object.values(row).some(v=>typeof v==="string" && v.includes(STATE.q))) tr.classList.add("qhit");
     cols.forEach(c=>{
       const td=el("td",c.txt?"txt":"");
       const v=row[c.k];
@@ -1373,14 +1424,38 @@ function applyHash(){
     if(no && indMeta(no) && no!==STATE.ind){ STATE.ind=no; STATE.page=0;
       STATE.sort={col:null,dir:-1}; touched=true; }
   }
+  if(h.dong){
+    const want=String(h.dong).split(",").map(x=>x.trim()).filter(Boolean);
+    const have=(M.dongs[STATE.r]||[]);
+    const pick=want.filter(d=>have.includes(d));
+    if(pick.length && (pick.length!==STATE.dongs.size || pick.some(d=>!STATE.dongs.has(d)))){
+      STATE.dongs=new Set(pick); STATE.page=0; renderDongs(); touched=true;
+      STATE.view = h.view || "dong";
+    }
+  }
+  let scrollTable=false;
   if("q" in h){
     const q=h.q||"";
-    if(q!==STATE.q){ STATE.q=q; $("#q").value=q; STATE.page=0;
-      STATE.view = h.view || "det"; touched=true; }
+    STATE.qkeep=q;
+    if($("#q").value!==q) $("#q").value=q;
+    const im=indMeta(STATE.ind);
+    const canDet=!!(im && im.calc==="complex");
+    if(q && canDet){
+      if(q!==STATE.q || STATE.view!=="det"){ touched=true; }
+      STATE.q=q; STATE.page=0; STATE.view=h.view||"det"; scrollTable=true;
+    } else {
+      if(STATE.q){ STATE.q=""; touched=true; }
+      STATE.page=0;
+      if(h.view && h.view!==STATE.view){ STATE.view=h.view; touched=true; }
+    }
   } else if(h.view && h.view!==STATE.view){
     STATE.view=h.view; STATE.page=0; touched=true;
   }
   if(touched) render();
+  if(scrollTable) setTimeout(()=>{
+    const tw=document.querySelector(".tablewrap");
+    if(tw) tw.scrollIntoView({behavior:"smooth",block:"center"});
+  },60);
   return touched;
 }
 window.APP.applyHash=applyHash;

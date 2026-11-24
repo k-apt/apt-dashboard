@@ -271,7 +271,7 @@
 <header>
   <div class="bar">
     <div class="brand">
-      <a class="logo" href="index.html" title="METRO 83 포털로">◲</a>
+      <a class="logo" href="index.html?v=202611241830" title="METRO 83 포털로">◲</a>
       <div>
         <h1>수도권 83지역 4사분면 포지셔닝 차트 생성기</h1>
         <p>오프라인 단일 파일 · 82개 지역 15,670단지(83개 중 인천 옹진군 데이터 없음) · 인터넷 연결 없이 브라우저에서 바로 실행</p>
@@ -1499,6 +1499,19 @@ function buildZones(){
   }
 }
 
+function applyHashRegion(){
+  const h = (location.hash || '').replace(/^#/, '');
+  const m = h.match(/(?:^|&)region=([^&]*)/);
+  if (!m) return false;
+  let name = m[1];
+  try { name = decodeURIComponent(name); } catch (e) {}
+  const r = REGIONS.find(x => x.n === name);
+  if (!r) return false;
+  selectRegion(r.n);
+  return true;
+}
+window.addEventListener('hashchange', () => { if (applyHashRegion()) draw(); });
+
 function selectRegion(name){
   const r = REGIONS.find(x => x.n === name);
   if (!r) return;
@@ -1933,6 +1946,7 @@ applyPanel();
   const first = (saved && REGIONS.find(r => r.n === saved)) || REGIONS.find(r => r.n === '화성시 병점구') || REGIONS[0];
   selectRegion(first.n);
 }
+try { applyHashRegion(); } catch (e) {}
 renderList();
 
 function bandView(r, i){
