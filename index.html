@@ -2,77 +2,97 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>수도권 83지역 부동산 데이터 대시보드</title>
 <style>
-  body { font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; margin: 0; background: #f5f7fb; color: #161b26; }
-  .wrap { max-width: 760px; margin: 0 auto; padding: 28px 18px 56px; }
-  h1 { font-size: 22px; margin: 0 0 6px; }
-  p.sub { color: #5b6476; font-size: 14px; margin: 0 0 20px; }
-  h2 { font-size: 15px; margin: 28px 0 10px; color: #3b4354; letter-spacing: -0.01em; }
+  *{box-sizing:border-box}
+  body { font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; margin: 0; background: #f5f7fb; color: #161b26;
+    -webkit-font-smoothing:antialiased; -webkit-text-size-adjust:100%; text-size-adjust:100%;
+    word-break: keep-all; overflow-wrap: break-word; }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 28px 18px 56px;
+    padding-left: max(18px, env(safe-area-inset-left));
+    padding-right: max(18px, env(safe-area-inset-right)); }
+  h1 { font-size: 22px; margin: 0 0 6px; line-height: 1.32; letter-spacing: -.02em; }
+  p.sub { color: #5b6476; font-size: 14px; margin: 0 0 20px; line-height: 1.6; }
+  h2 { font-size: 15px; margin: 26px 0 10px; color: #3b4354; letter-spacing: -0.01em; }
   .card { display: block; background: #fff; border: 1px solid #e2e7f0; border-radius: 14px; padding: 18px; margin-bottom: 12px; text-decoration: none; color: inherit; box-shadow: 0 2px 8px rgba(16,24,40,0.04); }
   .card:hover { border-color: #2563eb; }
+  .cardmain { display: block; text-decoration: none; color: inherit; }
   .badge { display: inline-block; font-size: 12px; font-weight: 600; color: #1d4ed8; background: #eff6ff; padding: 3px 9px; border-radius: 999px; margin-bottom: 8px; }
   .badge.new { color: #0f766e; background: #ecfdf5; }
-  .title { font-size: 17px; font-weight: 700; margin-bottom: 4px; }
-  .desc { font-size: 13px; color: #5b6476; }
+  .title { font-size: 17px; font-weight: 700; margin-bottom: 4px; line-height: 1.35; }
+  .desc { font-size: 13px; color: #5b6476; line-height: 1.6; }
+  .tools { margin-top: 12px; padding-top: 12px; border-top: 1px dashed #e2e7f0; }
+  .tool { display: block; font-size: 13px; font-weight: 600; color: #1d4ed8; text-decoration: none;
+    background: #f5f9ff; border: 1px solid #dbe8fd; border-radius: 10px; padding: 10px 12px; line-height: 1.45; }
+  .tool:hover { background: #eaf2ff; border-color: #bcd4fb; }
+  .tool span { font-weight: 500; color: #5b7fa8; }
   .foot { font-size: 12px; color: #8b93a1; margin-top: 26px; line-height: 1.7; }
+  @media (max-width: 430px) {
+    .wrap { padding: 18px 14px 44px;
+      padding-left: max(14px, env(safe-area-inset-left));
+      padding-right: max(14px, env(safe-area-inset-right)); }
+    h1 { font-size: 19px; }
+    .card { padding: 15px; border-radius: 13px; }
+    .title { font-size: 16px; }
+    .desc { font-size: 12.5px; }
+    .tool { font-size: 12.5px; }
+  }
 </style>
 </head>
 <body>
 <div class="wrap">
   <h1>수도권 83지역 부동산 데이터 대시보드</h1>
-  <p class="sub">PC·아이폰 Safari 어디서든 바로 열어보는 인터랙티브 분석 앱 — <b>지표 70선</b> + 포지셔닝 + 지도 뷰</p>
-
-  <a class="card" href="./positioning.html">
-    <span class="badge">LIVE</span>
-    <div class="title">📊 수도권 83지역 4사분면 포지셔닝 차트 생성기</div>
-    <div class="desc">82개 지역 · 15,670단지 · 출회율 × 회전율 · 가격대별 PNG/ZIP 저장</div>
-  </a>
+  <p class="sub">PC·아이폰 Safari 어디서든 바로 열어보는 인터랙티브 분석 앱 — <b>지표 70선</b> 7개 카테고리 + 지도 뷰</p>
 
   <h2>📈 지표 70선 — 7개 카테고리 대시보드</h2>
-  <p class="desc" style="margin:-4px 0 12px">법정동·세대수·평형·유형·연식·가격 6중 필터 + 🗺️ 지도 히트맵 · 모든 수치 실시간 재계산</p>
+  <p class="desc" style="margin:-4px 0 12px">법정동·세대수·평형·유형·연식·가격 6중 필터 + 🗺️ 지도 히트맵 · 모든 수치 실시간 재계산</p>
 
   <a class="card" href="./indicators-01-macro-cycle.html">
     <span class="badge new">#1~#14</span>
     <div class="title">01 거시수급 · 사이클</div>
-    <div class="desc">입주 과부족 · 3040 순이동 · 공급×수요 4분면 · 외지인 · 상승 탄력 · 방어력 · 체온계 스프레드 · 역전세×입주장 이중압박 · 월세화율 · 1km 입주장 압력 · 세대수 가중 실거래 지수 · 동일가중 지수·확산도 · 토허제 선행지수 · 5대 권역 장기지수</div>
+    <div class="desc">입주 과부족 · 3040 순이동 · 공급×수요 4분면 · 외지인 · 상승 탄력 · 방어력 · 체온계 스프레드 · 역전세×입주장 이중압박 · 월세화율 · 1km 입주장 압력 · 세대수 가중 실거래 지수 · 동일가중 지수·확산도 · 토허제 선행지수 · 5대 권역 장기지수</div>
   </a>
 
   <a class="card" href="./indicators-02-location-income.html">
     <span class="badge new">#15~#20</span>
     <div class="title">02 입지 · 소득 · 생활인프라</div>
-    <div class="desc">학군·초품아 · 학원가 · 동별 연봉 · 동별 연봉 PIR · 학군×학원 이중 프리미엄 · 통근 30·45분 가성비</div>
+    <div class="desc">학군·초품아 · 학원가 · 동별 연봉 · 동별 연봉 PIR · 학군×학원 이중 프리미엄 · 통근 30·45분 가성비</div>
   </a>
 
   <a class="card" href="./indicators-03-complex-spec.html">
     <span class="badge new">#21~#27</span>
     <div class="title">03 단지상품성 · 보유비용</div>
-    <div class="desc">세대수 등급 · 주차 · 전용률 · 보유세 부담률 · 실거주 쾌적성 · 보유세 상승률 · 동내 신축-구축 배율</div>
+    <div class="desc">세대수 등급 · 주차 · 전용률 · 보유세 부담률 · 실거주 쾌적성 · 보유세 상승률 · 동내 신축-구축 배율</div>
   </a>
 
   <a class="card" href="./indicators-04-price-valuation.html">
     <span class="badge new">#28~#38</span>
     <div class="title">04 가격 · 밸류에이션</div>
-    <div class="desc">평당가 · 괴리율 · 전고점 · 신고가 · 전세가율 · 평형 격차 · 1km 키맞추기 · 공시가 · 층수 프리미엄 · 순수 땅값 비율 · 전세 괴리 · 59/84 가격비 · 다차원 버블지수</div>
+    <div class="desc">평당가 · 괴리율 · 전고점 · 신고가 · 전세가율 · 평형 격차 · 1km 키맞추기 · 공시가 · 층수 프리미엄 · 순수 땅값 비율 · 전세 괴리 · 59/84 가격비 · 다차원 버블지수</div>
   </a>
 
-  <a class="card" href="./indicators-05-liquidity-negotiation.html">
-    <span class="badge new">#39~#52</span>
-    <div class="title">05 유동성 · 급매 · 협상력</div>
-    <div class="desc">출회율 · 회전율 · 적체 · 유동성 편차 · 급매 하향 · 소진 속도 · 해제율 · 전세 갱신율 · 네고 스코어 · 규제 경계선 밀집도 · 직전거래 등락 · 급매 체류일 · 하위 10% 바닥가 기울기 · 매도/매수압력 지수</div>
-  </a>
+  <div class="card">
+    <a class="cardmain" href="./indicators-05-liquidity-negotiation.html">
+      <span class="badge new">#39~#52</span>
+      <div class="title">05 유동성 · 급매 · 협상력</div>
+      <div class="desc">출회율 · 회전율 · 적체 · 유동성 편차 · 급매 하향 · 소진 속도 · 해제율 · 전세 갱신율 · 네고 스코어 · 규제 경계선 밀집도 · 직전거래 등락 · 급매 체류일 · 하위 10% 바닥가 기울기 · 매도/매수압력 지수</div>
+    </a>
+    <div class="tools">
+      <a class="tool" href="./positioning.html">📊 4사분면 포지셔닝 차트 생성기 <span>(82지역 · 15,670단지 · 출회율 × 회전율 · 가격대별 PNG/ZIP 저장)</span></a>
+    </div>
+  </div>
 
   <a class="card" href="./indicators-06-redevelopment.html">
     <span class="badge new">#53~#62</span>
     <div class="title">06 정비사업 · 특수트랙</div>
-    <div class="desc">대지지분 단가 · 용적률 여유 · 관리처분 안전마진 · 급지표 티어 · 청약 vs 기축 · 미분양 · 경매 마진 · 재건축 3요소 · 분양권 P 갭 · 경매 vs 500m 호가</div>
+    <div class="desc">대지지분 단가 · 용적률 여유 · 관리처분 안전마진 · 급지표 티어 · 청약 vs 기축 · 미분양 · 경매 마진 · 재건축 3요소 · 분양권 P 갭 · 경매 vs 500m 호가</div>
   </a>
 
   <a class="card" href="./indicators-07-final-screening.html">
     <span class="badge new">#63~#70</span>
     <div class="title">07 최종스크리닝 · 실행타이밍</div>
-    <div class="desc">실거주/투자 통합 스코어 · 전세 하단 지지력 · 입주장 캘린더 · 토허제 · LTV/DSR 한도 · 예산 맞춤 TOP · 2~3등 키맞추기 · 토허제 풍선효과</div>
+    <div class="desc">실거주/투자 통합 스코어 · 전세 하단 지지력 · 입주장 캘린더 · 토허제 · LTV/DSR 한도 · 예산 맞춤 TOP · 2~3등 키맞추기 · 토허제 풍선효과</div>
   </a>
 
   <div class="foot">

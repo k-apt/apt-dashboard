@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>수도권 83지역 4사분면 포지셔닝 차트 생성기</title>
 <style>
   :root{
@@ -16,6 +16,8 @@
     background:var(--bg); color:var(--ink);
     font-family:"Malgun Gothic","Apple SD Gothic Neo","Noto Sans KR","NanumGothic",sans-serif;
     -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+    -webkit-text-size-adjust:100%; text-size-adjust:100%;
+    word-break:keep-all; overflow-wrap:break-word;
   }
   header{
     position:sticky; top:0; z-index:40; background:rgba(255,255,255,.97);
@@ -220,8 +222,11 @@
     .fpanel .inner{grid-template-columns:repeat(2,minmax(0,1fr))}
   }
   @media (max-width:900px){
-    .bar,.controls,main,.filterbar,.fpanel{padding-left:12px; padding-right:12px}
-    h1{font-size:16px}
+    .bar,.controls,main,.filterbar,.fpanel{
+      padding-left:max(12px,env(safe-area-inset-left));
+      padding-right:max(12px,env(safe-area-inset-right));
+    }
+    h1{font-size:16px;white-space:normal}
     .brand p{display:none}
     .pick{min-width:170px}
     .pop{width:min(88vw,352px)}
