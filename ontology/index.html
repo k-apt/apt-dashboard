@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
 <title>투자 온톨로지 탐색기 — Taxonomy · Ontology · Knowledge Graph</title>
 <style>
 :root{
@@ -12,67 +12,82 @@
 *{box-sizing:border-box}
 html,body{margin:0;height:100%;background:var(--bg);color:var(--txt);
   font-family:Pretendard,-apple-system,BlinkMacSystemFont,"Segoe UI","Malgun Gothic",sans-serif;font-size:13px}
-#app{display:flex;flex-direction:column;height:100%}
-header{display:flex;align-items:center;gap:14px;padding:10px 16px;border-bottom:1px solid var(--line);
-  background:linear-gradient(90deg,#0B1220,#0D131C)}
-header h1{font-size:16px;margin:0;font-weight:800;letter-spacing:-.2px}
-header .badge{font-size:11px;color:var(--sub);border:1px solid var(--line);border-radius:20px;padding:3px 9px}
-#searchWrap{position:relative;margin-left:auto;width:340px}
+#app{display:flex;flex-direction:column;min-height:100%;height:100%}
+header{display:flex;align-items:center;flex-wrap:wrap;gap:10px 12px;padding:10px 16px;border-bottom:1px solid var(--line);
+  background:linear-gradient(90deg,#0B1220,#0D131C);flex-shrink:0}
+header h1{font-size:15px;margin:0;font-weight:800;letter-spacing:-.2px;white-space:nowrap}
+header .badge{font-size:11px;color:var(--sub);border:1px solid var(--line);border-radius:20px;padding:3px 9px;white-space:nowrap}
+#searchWrap{position:relative;margin-left:auto;width:320px;max-width:100%}
 #search{width:100%;background:#0A0F17;border:1px solid var(--line);color:var(--txt);
-  border-radius:8px;padding:8px 12px;font-size:13px;outline:none}
+  border-radius:8px;padding:7px 11px;font-size:13px;outline:none}
 #search:focus{border-color:var(--accent)}
 #results{position:absolute;top:38px;left:0;right:0;background:#0C131E;border:1px solid var(--line);
-  border-radius:8px;max-height:420px;overflow:auto;z-index:50;display:none;box-shadow:0 18px 40px #000a}
-#results div{padding:7px 10px;cursor:pointer;border-bottom:1px solid #131B26}
+  border-radius:8px;max-height:360px;overflow:auto;z-index:50;display:none;box-shadow:0 18px 40px #000a}
+#results div{padding:8px 10px;cursor:pointer;border-bottom:1px solid #131B26}
 #results div:hover{background:#152033}
 #results .t{color:var(--sub);font-size:11px;margin-left:6px}
-.tabs{display:flex;gap:6px}
-.tab{padding:6px 12px;border:1px solid var(--line);border-radius:8px;cursor:pointer;color:var(--sub);font-size:12px}
-.tab.on{background:#14243A;color:#fff;border-color:#2E4A70}
+.tabs{display:flex;gap:6px;flex-wrap:wrap}
+.tab{padding:6px 11px;border:1px solid var(--line);border-radius:8px;cursor:pointer;color:var(--sub);font-size:12px;white-space:nowrap;user-select:none}
+.tab.on{background:#14243A;color:#fff;border-color:#2E4A70;font-weight:600}
 main{flex:1;display:flex;min-height:0}
-#left{width:330px;border-right:1px solid var(--line);display:flex;flex-direction:column;min-height:0;background:var(--panel)}
+#left{width:310px;border-right:1px solid var(--line);display:flex;flex-direction:column;min-height:0;background:var(--panel)}
 #leftHead{padding:8px 12px;border-bottom:1px solid var(--line);display:flex;gap:8px;align-items:center}
 #leftHead .mode{font-size:11px;color:var(--sub)}
-#tree{flex:1;overflow:auto;padding:6px 4px 30px}
-.tnode{padding:4px 8px;border-radius:6px;cursor:pointer;display:flex;align-items:center;gap:6px;white-space:nowrap;
+#filters{padding:6px 10px;border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;gap:4px}
+#tree{flex:1;overflow:auto;padding:6px 6px 24px}
+.tnode{padding:5px 8px;border-radius:6px;cursor:pointer;display:flex;align-items:center;gap:6px;white-space:nowrap;
   overflow:hidden;text-overflow:ellipsis}
 .tnode:hover{background:#141E2E}
 .tnode.sel{background:#17304F;color:#fff}
 .tw{display:inline-block;width:12px;color:var(--sub);font-size:10px;text-align:center}
 .tcount{color:#6E7C8F;font-size:10px;margin-left:auto}
 .tbadge{font-size:9px;padding:1px 5px;border-radius:8px;background:#16202F;color:#8FA3B8;border:1px solid #1E2B3C}
-#center{flex:1;position:relative;min-width:0;background:radial-gradient(ellipse at 50% 40%,#0B1420,#070A10 70%)}
-#graph{width:100%;height:100%;display:block}
-#treeview{position:absolute;inset:0;overflow:auto;padding:22px 28px;display:none}
-#treeview .col{display:flex;gap:26px;align-items:flex-start;flex-wrap:wrap}
-.card{background:#0D1520;border:1px solid var(--line);border-radius:12px;padding:14px 16px;min-width:220px;max-width:320px}
+#center{flex:1;position:relative;min-width:0;min-height:420px;background:radial-gradient(ellipse at 50% 40%,#0B1420,#070A10 70%);overflow:hidden}
+#graph{width:100%;height:100%;display:block;touch-action:pan-x pan-y}
+#graphBar{position:absolute;top:10px;left:12px;right:12px;display:flex;justify-content:space-between;align-items:center;pointer-events:none;z-index:10;gap:8px;flex-wrap:wrap}
+.gbtn{pointer-events:auto;background:#0D1522dd;border:1px solid #26364C;color:#DCE7F5;border-radius:8px;padding:6px 11px;font-size:11.5px;cursor:pointer;font-weight:600;backdrop-filter:blur(6px)}
+.gbtn:hover{background:#16263D;border-color:#4C9BE8}
+.gbtn.primary{background:#163153ee;border-color:#3B7AC4;color:#fff}
+#treeview{position:absolute;inset:0;overflow:auto;padding:52px 18px 22px;display:none}
+#treeview .col{display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap}
+.card{background:#0D1520;border:1px solid var(--line);border-radius:12px;padding:14px 16px;min-width:220px;max-width:340px;flex:1 1 240px}
 .card h3{margin:0 0 8px;font-size:13px;color:#CFE0F2}
-.card .row{display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px dashed #16202E;font-size:12px}
-.card .row span:first-child{color:var(--sub)}
-#right{width:360px;border-left:1px solid var(--line);background:var(--panel);display:flex;flex-direction:column;min-height:0}
+.card .row{display:flex;justify-content:space-between;gap:10px;padding:4px 0;border-bottom:1px dashed #16202E;font-size:12px}
+.card .row span:first-child{color:var(--sub);flex-shrink:0}
+#right{width:340px;border-left:1px solid var(--line);background:var(--panel);display:flex;flex-direction:column;min-height:0}
 #rightHead{padding:12px 14px;border-bottom:1px solid var(--line)}
 #rightHead .k{font-size:10px;color:var(--sub);text-transform:uppercase;letter-spacing:.08em}
-#rightHead h2{margin:4px 0 2px;font-size:17px}
-#rightBody{flex:1;overflow:auto;padding:10px 14px 30px}
-.section{margin-bottom:16px}
+#rightHead h2{margin:4px 0 2px;font-size:16px;word-break:keep-all}
+#rightBody{flex:1;overflow:auto;padding:10px 14px 28px}
+.section{margin-bottom:14px}
 .section h4{margin:0 0 7px;font-size:11px;color:var(--sub);letter-spacing:.06em;text-transform:uppercase}
-.kv{display:grid;grid-template-columns:108px 1fr;gap:5px 10px;font-size:12px}
+.kv{display:grid;grid-template-columns:96px 1fr;gap:5px 10px;font-size:12px}
 .kv div:nth-child(odd){color:var(--sub)}
+.kv div:nth-child(even){word-break:break-word}
 .link{color:#7FC4FF;cursor:pointer;text-decoration:none}
 .link:hover{text-decoration:underline}
-.chip{display:inline-block;font-size:10.5px;padding:2px 7px;border-radius:10px;background:#132033;border:1px solid #1E2E45;
-  color:#A9C4E0;margin:0 4px 4px 0;cursor:pointer}
-.chip.on{background:#1D3A5C;color:#fff}
-#legend{position:absolute;left:14px;bottom:12px;font-size:10.5px;color:#8FA3B8;display:flex;gap:12px;flex-wrap:wrap;
-  background:#070A10cc;border:1px solid var(--line);border-radius:8px;padding:6px 10px;max-width:70%}
-#legend i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:4px}
-#status{font-size:11px;color:var(--sub);padding:5px 14px;border-top:1px solid var(--line);display:flex;gap:16px}
-#filters{padding:6px 12px;border-bottom:1px solid var(--line);display:flex;gap:5px;flex-wrap:wrap}
-#filters .ft{font-size:10.5px;padding:2px 7px;border-radius:9px;border:1px solid var(--line);cursor:pointer;color:#93A1B1}
-#filters .ft.on{background:#17304F;color:#fff;border-color:#2E4A70}
-::-webkit-scrollbar{width:9px;height:9px}
-::-webkit-scrollbar-thumb{background:#1C2838;border-radius:6px}
-::-webkit-scrollbar-track{background:transparent}
+.chip{display:inline-block;font-size:10.5px;padding:3px 7px;border-radius:10px;background:#132033;border:1px solid #1E2E45;
+  color:#A9C4E0;margin:0;cursor:pointer}
+.chip.on{background:#1D3A5C;color:#fff;border-color:#4C9BE8}
+#legend{position:absolute;left:12px;bottom:10px;font-size:10.5px;color:#8FA3B8;display:flex;gap:10px;flex-wrap:wrap;
+  background:#070A10d8;border:1px solid var(--line);border-radius:8px;padding:6px 10px;max-width:calc(100% - 24px);pointer-events:none}
+#legend span{display:inline-flex;align-items:center;gap:4px;white-space:nowrap}
+#legend i{display:inline-block;width:8px;height:8px;border-radius:50%}
+#status{display:flex;gap:14px;padding:6px 14px;border-top:1px solid var(--line);background:#0A0F17;font-size:11px;color:var(--sub);flex-wrap:wrap;flex-shrink:0}
+@media (max-width: 960px){
+  html,body{height:auto}
+  #app{height:auto;min-height:100vh}
+  header{padding:10px 12px;gap:8px}
+  header h1{font-size:14px}
+  #searchWrap{width:100%;margin-left:0;order:10}
+  .tabs{gap:5px}
+  .tab{padding:5px 9px;font-size:11.5px}
+  main{flex-direction:column;overflow:visible}
+  #center{order:1;width:100%;height:58vh;min-height:380px;flex:none}
+  #right{order:2;width:100%;border-left:none;border-top:1px solid var(--line);max-height:none}
+  #left{order:3;width:100%;border-right:none;border-top:1px solid var(--line);max-height:420px}
+  #legend{font-size:9.5px;gap:6px 8px;padding:4px 8px}
+}
 </style>
 </head>
 <body>
@@ -81,11 +96,11 @@ main{flex:1;display:flex;min-height:0}
     <h1>투자 온톨로지 탐색기</h1>
     <span class="badge" id="metaBadge">529,264 triples</span>
     <div class="tabs">
-      <div class="tab on" data-layer="tax">① Taxonomy</div>
+      <div class="tab" data-layer="tax">① Taxonomy</div>
       <div class="tab" data-layer="onto">② Ontology</div>
-      <div class="tab" data-layer="kg">③ Knowledge Graph</div>
+      <div class="tab on" data-layer="kg">③ Knowledge Graph</div>
     </div>
-    <div class="tabs" style="margin-left:8px">
+    <div class="tabs">
       <div class="tab on" data-view="graph">네트워크</div>
       <div class="tab" data-view="tree">트리 카드</div>
     </div>
@@ -102,6 +117,7 @@ main{flex:1;display:flex;min-height:0}
       <div id="tree"></div>
     </div>
     <div id="center">
+      <div id="graphBar"><button class="gbtn primary" id="btnFullKG">🌐 전체 Ontology KG 보기</button><div style="display:flex;gap:6px"><button class="gbtn" id="btnZoomIn">+</button><button class="gbtn" id="btnZoomOut">-</button><button class="gbtn" id="btnZoomReset">맞춤</button></div></div>
       <svg id="graph"></svg>
       <div id="treeview"></div>
       <div id="legend"></div>
@@ -447,58 +463,111 @@ function layout(nodes, edges, w, h){
   return pos;
 }
 
+function buildFullOntologyKG(){
+  const nodes=[], edges=[], seen=new Set();
+  const add=(id)=>{ if(!id||seen.has(id)) return; seen.add(id); nodes.push({id}); };
+  const link=(s,t,rel)=>{ if(seen.has(s)&&seen.has(t)) edges.push({s,t,rel}); };
+
+  // Macro & Policy Core
+  DATA.series.slice(0,5).forEach(s=>add(s.id));
+  DATA.policies.slice(0,5).forEach(p=>add(p.id));
+  DATA.cycles.slice(-2).forEach(c=>add(c.id));
+
+  // Real Estate Regions & Top Complexes & Toheoje & School
+  DATA.metro.forEach(m=>add(m.id));
+  const topRegions = ['region_11710','region_11680','region_11650','region_11170','region_41135','region_41465','region_28185'];
+  topRegions.forEach(rid=>{
+    const r = DATA.sigungu.find(x=>x.id===rid);
+    if(r){
+      add(r.id); link(r.id, r.metro, 'partOfRegion');
+      (DATA.complexes||[]).filter(c=>c.r===r.id).slice(0,2).forEach(c=>{ add(c.id); link(c.id, r.id, 'locatedIn'); });
+      const sc = (DATA.schools||[]).find(s=>s.r===r.id);
+      if(sc){ add(sc.id); link(sc.id, r.id, 'locatedIn'); }
+      (DATA.zones||[]).filter(z=>(z.rs||[]).includes(r.id)).slice(0,1).forEach(z=>{ add(z.id); link(r.id, z.id, 'subjectToToheoje'); });
+    }
+  });
+  // Auctions & Officetel
+  (DATA.auctions||[]).slice(0,3).forEach(a=>{ add(a.id); if(seen.has(a.r)) link(a.id, a.r, 'locatedIn'); });
+
+  // Stocks, ETFs, 13F Gurus, SEC
+  DATA.stocks.slice(0,8).forEach(s=>add(s.id));
+  DATA.etfs.slice(0,5).forEach(e=>{
+    add(e.id);
+    (stocksByEtf[e.id]||[]).slice(0,3).forEach(([sid])=>{ if(seen.has(sid)) link(e.id, sid, 'holdsStock'); });
+  });
+  DATA.gurus.slice(0,4).forEach(g=>{
+    add(g.id);
+    (stocksByGuru[g.id]||[]).slice(0,3).forEach(([sid])=>{ if(seen.has(sid)) link(g.id, sid, 'heldByGuru'); });
+  });
+
+  // Cross-domain Macro <-> Asset connections
+  const baseId = DATA.series[0]?.id, m2Id = DATA.series[1]?.id, fxId = DATA.series[2]?.id;
+  if(baseId){
+    link('region_11710', baseId, 'correlatedWithMacro');
+    link('region_11680', baseId, 'correlatedWithMacro');
+    if(DATA.stocks[0]) link(DATA.stocks[0].id, baseId, 'correlatedWithMacro');
+  }
+  if(m2Id && DATA.stocks[1]) link(DATA.stocks[1].id, m2Id, 'correlatedWithMacro');
+  if(fxId && DATA.etfs[0]) link(DATA.etfs[0].id, fxId, 'correlatedWithMacro');
+  DATA.policies.slice(0,3).forEach(p=>{ link('region_11710', p.id, 'affectedByPolicy'); });
+  return {nodes, edges};
+}
+
+let zoomScale = 1.0;
 function renderGraph(){
   if(state.view!=='graph'){ svg.style.display='none'; treeview.style.display='block'; renderCards(); return; }
   svg.style.display='block'; treeview.style.display='none';
-  const rect=svg.getBoundingClientRect(); const w=rect.width||900, h=rect.height||700;
-  svg.setAttribute('viewBox',`0 0 ${w} ${h}`);
+  const rect=svg.getBoundingClientRect(); const w=Math.max(320, rect.width||900), h=Math.max(340, rect.height||600);
+  const vw = w / zoomScale, vh = h / zoomScale;
+  const vx = (w - vw)/2, vy = (h - vh)/2;
+  svg.setAttribute('viewBox',`${vx} ${vy} ${vw} ${vh}`);
   svg.innerHTML='';
   let data;
   if(state.shown && state.shown.nodes){ data=state.shown; }
-  else if(state.sel){ data=egoGraph(state.sel); }
-  else { // 초기: 3권역 + 대표 시군구 + 자산군
-    const nodes=[], edges=[]; const add=id=>nodes.push({id});
-    DATA.metro.forEach(m=>add(m.id));
-    DATA.sigungu.slice(0,12).forEach(s=>{add(s.id);edges.push({s:s.id,t:s.metro,rel:'partOfRegion'})});
-    DATA.series.slice(0,4).forEach(s=>add(s.id));
-    DATA.stocks.slice(0,5).forEach(s=>add(s.id));
-    DATA.etfs.slice(0,3).forEach(e=>add(e.id));
-    DATA.gurus.slice(0,2).forEach(g=>add(g.id));
-    data={nodes,edges};
-  }
+  else if(state.sel && state.sel !== '__FULL_KG__'){ data=egoGraph(state.sel); }
+  else { data=buildFullOntologyKG(); }
   const uniq=new Map(data.nodes.map(n=>[n.id,n]));
   const nodes=[...uniq.values()]; const edges=data.edges;
+  state.shown = {nodes, edges};
   const pos=layout(nodes,edges,w,h);
   const NS='http://www.w3.org/2000/svg';
   const gEdges=document.createElementNS(NS,'g'), gNodes=document.createElementNS(NS,'g'), gLabels=document.createElementNS(NS,'g');
   const deg=new Map(); edges.forEach(e=>{deg.set(e.s,(deg.get(e.s)||0)+1);deg.set(e.t,(deg.get(e.t)||0)+1);});
+  const showEdgeLabels = edges.length <= 18;
   edges.forEach(e=>{const a=pos.get(e.s),b=pos.get(e.t); if(!a||!b)return;
     const ln=document.createElementNS(NS,'line');
     ln.setAttribute('x1',a.x);ln.setAttribute('y1',a.y);ln.setAttribute('x2',b.x);ln.setAttribute('y2',b.y);
-    ln.setAttribute('stroke',REL_COLOR[e.rel]||'#39485C'); ln.setAttribute('stroke-width',(deg.get(e.s)>6||deg.get(e.t)>6)?1.6:0.9);
-    ln.setAttribute('opacity',0.42); gEdges.appendChild(ln);
-    if((e.rel!=='locatedIn'&&e.rel!=='partOfRegion') || (deg.get(e.s)>8||deg.get(e.t)>8)){
+    ln.setAttribute('stroke',REL_COLOR[e.rel]||'#39485C'); ln.setAttribute('stroke-width',(deg.get(e.s)>6||deg.get(e.t)>6)?1.5:0.95);
+    ln.setAttribute('opacity',0.46);
+    const title=document.createElementNS(NS,'title'); title.textContent=`${labelOf(e.s)} —[${e.rel}]→ ${labelOf(e.t)}`; ln.appendChild(title);
+    gEdges.appendChild(ln);
+    if(showEdgeLabels && e.rel!=='locatedIn' && e.rel!=='partOfRegion'){
       const t=document.createElementNS(NS,'text');
-      t.setAttribute('x',(a.x+b.x)/2); t.setAttribute('y',(a.y+b.y)/2-3); t.setAttribute('fill',REL_COLOR[e.rel]||'#6F8094');
-      t.setAttribute('font-size','9'); t.setAttribute('text-anchor','middle'); t.setAttribute('opacity','0.85');
+      t.setAttribute('x',(a.x+b.x)/2); t.setAttribute('y',(a.y+b.y)/2-3); t.setAttribute('fill',REL_COLOR[e.rel]||'#8FA3B8');
+      t.setAttribute('font-size','9'); t.setAttribute('text-anchor','middle'); t.setAttribute('opacity','0.9');
       t.textContent=e.rel; gEdges.appendChild(t);
     }
   });
+  const isMobile = w < 520;
   nodes.forEach(n=>{
     const p=pos.get(n.id), k=kindOf(n.id), d=deg.get(n.id)||0;
+    const r = (isMobile?4.5:6)+Math.min(13, Math.sqrt(d)*2.6);
     const c=document.createElementNS(NS,'circle');
     c.setAttribute('cx',p.x);c.setAttribute('cy',p.y);
-    c.setAttribute('r', 6+Math.min(16, Math.sqrt(d)*3));
+    c.setAttribute('r', r);
     c.setAttribute('fill',CLASS_COLOR[k]||'#7C8DA3'); c.setAttribute('stroke','#0A0F17'); c.setAttribute('stroke-width','1.2');
     c.style.cursor='pointer'; c.onclick=()=>select(n.id);
     gNodes.appendChild(c);
-    const t=document.createElementNS(NS,'text');
-    t.setAttribute('x',p.x); t.setAttribute('y',p.y+(6+Math.min(16,Math.sqrt(d)*3))+13);
-    t.setAttribute('fill','#DCE7F5'); t.setAttribute('font-size', d>8?'12':'10.5'); t.setAttribute('text-anchor','middle');
-    t.setAttribute('paint-order','stroke'); t.setAttribute('stroke','#070A10'); t.setAttribute('stroke-width','3');
-    t.style.pointerEvents='none';
-    let lab=labelOf(n.id); if(lab.length>22) lab=lab.slice(0,21)+'…';
-    t.textContent=lab; gLabels.appendChild(t);
+    // Show labels for important nodes or when total nodes <= 35
+    if(nodes.length <= 35 || d >= 2 || k==='Metro' || k==='Sigungu' || k==='USStock' || k==='Guru13F' || k==='TimeSeries'){
+      const t=document.createElementNS(NS,'text');
+      t.setAttribute('x',p.x); t.setAttribute('y',p.y+r+11);
+      t.setAttribute('fill','#DCE7F5'); t.setAttribute('font-size', isMobile?(d>4?'10':'8.5'):(d>6?'11.5':'10')); t.setAttribute('text-anchor','middle');
+      t.setAttribute('paint-order','stroke'); t.setAttribute('stroke','#070A10'); t.setAttribute('stroke-width','3');
+      t.style.pointerEvents='none';
+      let lab=labelOf(n.id); if(lab.length>(isMobile?11:18)) lab=lab.slice(0,isMobile?10:17)+'…';
+      t.textContent=lab; gLabels.appendChild(t);
+    }
   });
   svg.appendChild(gEdges); svg.appendChild(gNodes); svg.appendChild(gLabels);
   $('#stNodes').textContent='노드 '+nodes.length;
@@ -654,7 +723,26 @@ document.querySelectorAll('.tab[data-view]').forEach(t=>t.onclick=()=>{
 });
 window.addEventListener('resize',()=>{ if(state.view==='graph') renderGraph(); });
 $('#metaBadge').textContent = DATA.meta.triples.toLocaleString('ko-KR')+' triples';
-buildFilters(); renderLeft(); select('region_11710');
+function showFullKG(){
+  state.sel='__FULL_KG__'; state.shown=null; zoomScale=1.0;
+  $('#selKind').textContent='전체 지식그래프';
+  $('#selName').textContent='투자 온톨로지 통합 Knowledge Graph';
+  $('#selSub').textContent='거시·정책 ↔ 부동산(서울·경기·인천) ↔ 주식·ETF·13F 거장';
+  $('#props').innerHTML='<h4>통합 커버리지</h4><div class="kv">'
+    +kv('총 트리플',fmt(DATA.meta.triples))
+    +kv('부동산',fmt(DATA.complexes.length)+'단지 / '+fmt(DATA.sigungu.length)+'지역')
+    +kv('주식·ETF',fmt(DATA.stocks.length)+'종목 / '+fmt(DATA.etfs.length)+'ETF')
+    +kv('거장·정책',fmt(DATA.gurus.length)+'기관 / '+fmt(DATA.policies.length)+'정책')
+    +'</div>';
+  $('#rels').innerHTML='<h4>탐색 안내</h4><div style="color:#93A1B1;font-size:12px;line-height:1.5">그래프의 노드를 누르면 해당 자산의 연결 관계와 상세 속성이 열립니다. 상단 검색창에서 단지명·지역·티커를 바로 찾을 수 있어요.</div>';
+  renderGraph();
+}
+$('#btnFullKG').onclick=()=>showFullKG();
+$('#btnZoomIn').onclick=()=>{ zoomScale=Math.min(2.6, zoomScale*1.25); renderGraph(); };
+$('#btnZoomOut').onclick=()=>{ zoomScale=Math.max(0.6, zoomScale/1.25); renderGraph(); };
+$('#btnZoomReset').onclick=()=>{ zoomScale=1.0; renderGraph(); };
+state.layer='kg';
+buildFilters(); renderLeft(); showFullKG();
 </script>
 </body>
 </html>
