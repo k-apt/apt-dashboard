@@ -291,6 +291,7 @@ function pngFooter(title) {
 /* ── 01 시계열 ────────────────────────────────────────── */
 const METRIC = {
   mmed: { l: '매매 중위가', get: r => r[2] == null ? null : r[2] / 10000, fmt: v => v.toFixed(2) + '억', tick: v => v.toFixed(1), unit: '억' },
+  ppp: { l: '평당가', get: r => r[3], fmt: v => fmtN(v) + '만/평', tick: v => fmtN(v), unit: '만/평' },
   ratio: { l: '전세가율', get: r => r[8], fmt: v => v.toFixed(1) + '%', tick: v => v.toFixed(0), unit: '%' },
   n: { l: '거래량', get: r => r[1], fmt: v => fmtN(v) + '건', tick: v => v >= 10000 ? (v / 10000).toFixed(0) + '만' : fmtN(v), unit: '건' },
   wol: { l: '월세 비중', get: r => r[7], fmt: v => v.toFixed(1) + '%', tick: v => v.toFixed(0), unit: '%' },
@@ -408,6 +409,14 @@ function renderSeries() {
       (peak ? (b[2] >= peak[2]
           ? ` · 2026년이 기간 최고 <em>+${((b[2] / peak[2] - 1) * 100).toFixed(1)}%</em> (직전 최고 ${peak[0]} ${eok(peak[2])})`
           : ` · ${peak[0]} 고점 ${eok(peak[2])} 대비 <em>${((b[2] / peak[2] - 1) * 100).toFixed(1)}%</em>`) : '');
+  } else if (S.series === 'ppp') {
+    const ch = (b[3] && a[3]) ? (b[3] / a[3] - 1) * 100 : null;
+    const hist2 = rows.filter(r => r[0] !== M.partialYear && r[3]);
+    const pk = hist2.reduce((m, r) => (!m || r[3] > m[3]) ? r : m, null);
+    ins = `<b>2016 ${fmtN(a[3])}만/평</b> → <b>2026 ${fmtN(b[3])}만/평</b>` +
+      (ch != null ? ` · 10년 <em>${ch > 0 ? '+' : ''}${ch.toFixed(1)}%</em>` : '') +
+      (pk ? ` · 직전 최고 <b>${pk[0]} ${fmtN(pk[3])}만</b>` : '') +
+      ` · 중위가와 달리 평형 구성 영향을 덜 받습니다`;
   } else if (S.series === 'ratio') {
     const dpp = (a[8] != null && b[8] != null) ? b[8] - a[8] : null;
     ins = `<b>2016 ${pct(a[8])}</b> → <b>2026 ${pct(b[8])}</b>` + (dpp != null ? ` · <em>${dpp > 0 ? '+' : ''}${dpp.toFixed(1)}pp</em>` : '') +
@@ -467,7 +476,7 @@ function renderRank() {
   const list = S.rankAll ? all01 : all01.slice(0, 15);
   const maxv = met.get(all01[0]), minv = Math.min.apply(null, all01.map(r => met.get(r)));
   const inScope = new Set(scopeList().map(r => r.s));
-  $('#rankDesc').textContent = met.l + ' (' + met.sub + ') · ' + (S.rankAll || S.rankTable ? all01.length : list.length + '/' + all01.length) + '개 구·군 · 행을 누르면 드릴다운';
+  $('#rankDesc').textContent = met.l + ' (' + met.sub + ') · ' + (S.rankAll || S.rankTable ? '전체 ' + all01.length : '상위 ' + list.length + ' / ' + all01.length) + '개 구·군 · 행을 누르면 드릴다운';
   if (S.rankTable) {
     $('#rankBody').innerHTML = `<div class="tblwrap" style="padding:10px 14px 14px"><table>
       <thead><tr><th>구·군</th><th>매매중위</th><th>평당가</th><th>전세가율</th><th>괴리율</th><th>2026거래</th><th>호가단지</th></tr></thead><tbody>
@@ -806,6 +815,7 @@ function renderNotes() {
     <ul>
       <li>2026년은 <b>1~11월(11/26까지)</b> 누계라 다른 해와 직접 비교하면 적게 보입니다. 차트의 마지막 점은 점선 음영으로 표시했습니다.</li>
       <li>호가는 <b>매물 호가</b>이지 체결가가 아닙니다. 실거래는 계약일 기준이며 2024~2026 단지 요약은 3년 누적입니다.</li>
+      <li>중위가는 그해 거래된 <b>평형·단지 구성</b>에 따라 달라집니다. 거래가 급감한 2021~2022년에는 소형·저가 거래 비중이 커지며 중위가가 낮게 보일 수 있어, 추세는 <b>평당가</b>와 함께 보는 것이 안전합니다.</li>
       <li>다중 선택 시 중위가는 구·군별 분포를 합쳐 다시 계산합니다(1,000만원 버킷, 오차 ±500만원 이내).</li>
       <li>세대수는 단지마스터 기준. 호가 데이터가 없는 소형 단지는 '세대 미확인'으로, 세대수 필터를 걸면 빠집니다.</li>
       <li>괴리율은 표본이 적은 단지에서 크게 튑니다. '확인필요' 28곳은 단지명 유사도가 낮아 산점도에서 빈 원으로 표시했습니다.</li>

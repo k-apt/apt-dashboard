@@ -188,7 +188,7 @@ tr[data-s]:active td{background:var(--tile)}
 .cx:active{background:var(--tile)}
 .cxm{flex:1;min-width:0}
 .cxn{font-size:12.8px;font-weight:750;letter-spacing:-.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.cxs{font-size:10.5px;color:var(--sub);margin-top:3px;display:flex;gap:5px;align-items:center;white-space:nowrap;overflow:hidden}
+.cxs{font-size:10.5px;color:var(--sub);margin-top:3px;display:flex;gap:5px;flex-wrap:wrap;align-items:center}
 .badge{font-size:9.5px;font-weight:750;padding:2px 5px;border-radius:4px;background:var(--tile);color:var(--sub);letter-spacing:.02em}
 .badge.hg{background:var(--accsoft);color:var(--acc)}
 .cxr{flex:none;text-align:right}
