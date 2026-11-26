@@ -528,6 +528,8 @@ function renderScatter() {
     }));
   }
   if (!pts.length) { host.innerHTML = '<div class="empty">조건에 맞는 단지가 없습니다</div>'; return; }
+  const scopeSetG = new Set(scopeList().map(r => r.s));
+  const gapAll = L.filter(r => scopeSetG.has(r[F.sgg]) && cxOk(r) && r[F.gap] != null).map(r => r[F.gap]).sort((a, b) => a - b);
   const xs = pts.map(p => p.x).sort((a, b) => a - b);
   const ys = pts.map(p => clamp(p.y, -60, 120)).sort((a, b) => a - b);
   const q = (arr, f) => arr[Math.min(arr.length - 1, Math.max(0, Math.floor(f * (arr.length - 1))))];
@@ -539,7 +541,7 @@ function renderScatter() {
   x0 = gx.lo; x1 = gx.hi; y0 = gy.lo; y1 = gy.hi;
   const X = v => pad.l + (W - pad.l - pad.r) * ((v - x0) / (x1 - x0));
   const Y = v => pad.t + (H - pad.t - pad.b) * (1 - (v - y0) / (y1 - y0));
-  const mx = xs[Math.floor(xs.length / 2)], my = ys[Math.floor(ys.length / 2)];
+  const mx = xs[Math.floor(xs.length / 2)], my = gapAll[Math.floor(gapAll.length / 2)];
   gx.ticks.forEach(t => {
     svg.appendChild(svgEl('line', { x1: X(t), y1: pad.t, x2: X(t), y2: H - pad.b, stroke: cv('--grid'), 'stroke-width': 1 }));
     svg.appendChild(txtEl(X(t), H - pad.b + 14, t.toFixed(0) + '%', { 'text-anchor': 'middle', 'font-size': 9.5, fill: cv('--axis') }));
@@ -596,8 +598,7 @@ function renderScatter() {
     ? '구·군 ' + pts.length + '개 평균 · 가로 실거래 전세가율, 세로 호가 괴리율'
     : '단지 ' + fmtN(pts.length) + '곳 · 점 크기 세대수 · 확인필요 28곳은 빈 원';
 
-  const gapAll = pts.map(p => p.y).sort((a, b) => a - b);
-  const me = gapAll[Math.floor(gapAll.length / 2)];
+  const me = gapAll.length ? gapAll[Math.floor(gapAll.length / 2)] : null;
   const cityMed = CITIES.map(c => {
     const arr = pts.filter(p => (p.kind === 'cx' ? cityOfSgg(p.raw[F.sgg]) : p.raw.c) === c.n).map(p => p.y).sort((a, b) => a - b);
     return arr.length ? { n: c.n, v: arr[Math.floor(arr.length / 2)] } : null;
