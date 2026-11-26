@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="ko" data-theme="light">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#F4F6F9" />
+<meta property="og:type" content="website" />
+<meta property="og:title" content="REGIONAL 41 · 지방 41개 구·군 부동산 데이터 랩" />
+<meta property="og:description" content="부산·대구·대전·울산·청주·천안 41개 구·군 | 호가 2,788단지 · 2016~2026 실거래 297만 건 시계열·랭킹·산점도" />
+<meta name="twitter:card" content="summary" />
+<title>REGIONAL 41 · 지방 41개 구·군 부동산 데이터 랩</title>
+<script>(function(){try{var t=localStorage.getItem('apt_theme');if(t!=='light'&&t!=='dark')t='light';
+document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<div class="wrap">
+
+  <div class="hd">
+    <div>
+      <div class="hdmark"><i></i>REGIONAL 41 · 지방 부동산 데이터 랩</div>
+      <h1>지방 41 <em>부동산</em> 데이터 랩</h1>
+      <p class="hdsub">부산·대구·대전·울산·청주·천안 <b>41개 구·군</b> · 호가 <b>2,788단지</b> · 실거래 <b>2016~2026</b></p>
+      <div class="hdmeta" id="hdmeta"></div>
+    </div>
+    <div class="hdact">
+      <a class="home" href="../">METRO 83 ↗</a>
+      <button class="tgl" id="themeBtn" aria-label="라이트/다크 모드 전환">☾</button>
+    </div>
+  </div>
+
+  <div class="kpis" id="kpis"></div>
+
+  <div class="card filters" id="filters">
+   <div class="fcol">
+    <div class="frow">
+      <span class="flab">시도</span>
+      <div class="scrollx" id="cityTabs"></div>
+    </div>
+    <div class="frow">
+      <span class="flab">구·군</span>
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;align-items:center;gap:6px">
+          <button class="chip" id="ggToggle" aria-pressed="false" style="flex:none">구·군 선택 <span class="x">▾</span></button>
+          <div class="chips" id="ggQuick" style="flex:1;overflow-x:auto;overflow-y:hidden;flex-wrap:nowrap;scrollbar-width:none"></div>
+        </div>
+        <div class="gwrap" id="ggWrap"></div>
+      </div>
+    </div>
+   </div>
+   <div class="fcol">
+    <div class="frow">
+      <span class="flab">세대수</span>
+      <div class="chips" id="tierChips"></div>
+    </div>
+    <div class="frow">
+      <span class="flab">면적</span>
+      <div class="chips" id="areaChips"></div>
+    </div>
+    <div class="frow">
+      <span class="flab">가격</span>
+      <div class="chips" id="priceChips"></div>
+    </div>
+   </div>
+  </div>
+
+  <div class="scope" id="scopeStrip"></div>
+
+  <section class="sec" id="sec-series">
+    <div class="sec-hd">
+      <div>
+        <h2 class="sec-t"><span>01</span>시계열 2016→2026</h2>
+        <p class="sec-d" id="seriesDesc">매매 중위가 · 전세가율 · 거래량 · 월세 비중</p>
+      </div>
+      <div class="tools"><button class="btn sm" data-png="series">PNG</button></div>
+    </div>
+    <div class="card chartcard">
+      <div class="mtabs" id="seriesTabs"></div>
+      <div class="plot" id="seriesPlot" style="margin-top:8px"></div>
+      <div class="legend" id="seriesLegend"></div>
+      <div class="insight" id="seriesInsight"></div>
+    </div>
+  </section>
+
+  <section class="sec" id="sec-rank">
+    <div class="sec-hd">
+      <div>
+        <h2 class="sec-t"><span>02</span>구·군 랭킹</h2>
+        <p class="sec-d" id="rankDesc">41개 구·군을 지표별로 비교 · 행을 누르면 단지까지 드릴다운</p>
+      </div>
+      <div class="tools">
+        <button class="btn sm" id="rankView" aria-pressed="false">표로 보기</button>
+        <button class="btn sm" data-png="rank">PNG</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="mtabs" id="rankTabs" style="padding:11px 12px 2px"></div>
+      <div id="rankBody"></div>
+    </div>
+  </section>
+
+  <section class="sec" id="sec-scatter">
+    <div class="sec-hd">
+      <div>
+        <h2 class="sec-t"><span>03</span>괴리율 × 전세가율</h2>
+        <p class="sec-d" id="scatterDesc">호가가 실거래보다 얼마나 비싼가 · 점 하나가 단지 하나</p>
+      </div>
+      <div class="tools">
+        <button class="btn sm" id="scatterView" aria-pressed="false">구·군 평균</button>
+        <button class="btn sm" data-png="scatter">PNG</button>
+      </div>
+    </div>
+    <div class="card chartcard">
+      <div class="plot" id="scatterPlot"></div>
+      <div class="legend" id="scatterLegend"></div>
+      <div class="insight" id="scatterInsight"></div>
+    </div>
+    <div class="card" style="margin-top:10px" id="gapTableCard"></div>
+  </section>
+
+  <section class="sec" id="sec-cx">
+    <div class="sec-hd">
+      <div>
+        <h2 class="sec-t"><span>04</span>단지 검색 · 드릴다운</h2>
+        <p class="sec-d" id="cxDesc">호가 2,788단지 + 실거래 9,635단지 · 이름·동으로 검색</p>
+      </div>
+    </div>
+    <div class="card" style="padding:12px 12px 4px">
+      <div class="search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><path d="M16.2 16.2 21 21"></path></svg>
+        <input id="cxSearch" type="search" placeholder="단지명 · 동 이름 (예: 해운대, 센텀)" autocomplete="off" enterkeyhint="search" />
+        <button id="cxClear" class="hide">지우기</button>
+      </div>
+      <div class="mtabs" id="cxTabs" style="margin-bottom:4px"></div>
+      <div id="cxBody"></div>
+    </div>
+  </section>
+
+  <section class="sec" id="sec-flow">
+    <div class="sec-hd">
+      <div>
+        <h2 class="sec-t"><span>05</span>월별 거래 흐름</h2>
+        <p class="sec-d" id="flowDesc">최근 36개월 매매·전세·월세 거래 건수</p>
+      </div>
+      <div class="tools"><button class="btn sm" data-png="flow">PNG</button></div>
+    </div>
+    <div class="card chartcard">
+      <div class="plot" id="flowPlot"></div>
+      <div class="legend" id="flowLegend"></div>
+      <div class="insight" id="flowInsight"></div>
+    </div>
+  </section>
+
+  <section class="sec" id="sec-notes">
+    <div class="sec-hd"><div><h2 class="sec-t"><span>06</span>데이터 노트</h2>
+      <p class="sec-d">원천 · 산식 · 커버리지 · 한계</p></div></div>
+    <div class="card notes" id="notes"></div>
+  </section>
+
+  <div class="foot">
+    <div>REGIONAL 41 · 지방 41개 구·군 부동산 데이터 랩<br>수도권 83개 지역은 <a href="../" style="color:var(--acc);font-weight:700">METRO 83</a></div>
+    <div style="text-align:right">기준일 2026-11-27 · 호가 2026-11-26<br>made for iPhone Safari</div>
+  </div>
+</div>
+
+<div class="sheet" id="sheet" aria-hidden="true">
+  <div class="bd" data-close="1"></div>
+  <div class="in" id="sheetIn"></div>
+</div>
+<div class="pngmodal" id="pngModal" aria-hidden="true">
+  <div class="bd" data-pngclose="1"></div>
+  <div class="in">
+    <div class="hd"><b id="pngName">차트 PNG</b><button class="xbtn" style="font-size:18px" data-pngclose="1">✕</button></div>
+    <img id="pngImg" alt="저장할 차트 이미지" />
+    <div class="ft">
+      <span class="hint">이미지를 <b>길게 눌러</b> 「사진에 저장」을 누르면 사진첩에 저장됩니다.</span>
+      <button class="ghost" id="pngDl">파일로 저장</button>
+      <button class="primary" data-pngclose="1">닫기</button>
+    </div>
+  </div>
+</div>
+<div class="note-toast" id="toast"></div>
+
+<script src="data/core.js"></script>
+<script src="data/listings.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
