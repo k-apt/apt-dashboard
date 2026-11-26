@@ -176,7 +176,7 @@ function renderKPI() {
   const txW = list.reduce((a, r) => a + (r.txW || 0), 0);
   const cells = [
     { l: '범위 SCOPE', v: list.length, s: ' 개 구·군', d: S.city === 'all' ? '6개 시도 · 41개 구·군 전체' : S.city + ' · ' + list.length + '개 구·군' },
-    { l: '호가 매물', v: fmtN(mae + jeon), s: ' 건', d: '2,788단지 · 매매 ' + fmtN(mae) + ' · 전세 ' + fmtN(jeon) },
+    { l: '호가 매물', v: fmtN(mae + jeon), s: ' 건', d: fmtN(lx.length) + '단지 · 매매 ' + fmtN(mae) + ' · 전세 ' + fmtN(jeon) },
     { l: '실거래', v: fmtN(txA + txJ + txW), s: ' 건', d: '매매 ' + fmtN(txA) + ' · 전월세 ' + fmtN(txJ + txW) },
     { l: '매매 중위', v: cur[2] == null ? '—' : (cur[2] / 10000).toFixed(2), s: ' 억', d: '2026.1~11월 ' + fmtN(cur[1]) + '건', acc: true },
     { l: '전세가율', v: cur[8] == null ? '—' : cur[8].toFixed(1), s: ' %', d: '실거래 단지중위 · 호가 ' + (rMed == null ? '—' : rMed.toFixed(1) + '%') },
